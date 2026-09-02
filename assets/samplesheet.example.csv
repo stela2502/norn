@@ -1,0 +1,2 @@
+sample,r1,r2,chemistry,cell_barcode_len
+sample1,/data/sample_L001_R1.fastq.gz;/data/sample_L002_R1.fastq.gz,/data/sample_L001_R2.fastq.gz;/data/sample_L002_R2.fastq.gz,bd-v2-384,27
