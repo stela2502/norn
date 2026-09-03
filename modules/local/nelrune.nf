@@ -15,6 +15,9 @@ process NELRUNE {
 
     script:
     """
+    mkdir -p lumrik_tmp
+    export LUMRIK_TMPDIR="\$PWD/lumrik_tmp"
+
     nelrune \\
         --r1 ${r1.join(' ')} \\
         --r2 ${r2.join(' ')} \\
