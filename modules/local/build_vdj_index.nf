@@ -16,4 +16,9 @@ process BUILD_VDJ_INDEX {
         --genome ${genome} \\
         --out reference.vdjidx
     """
+    stub:
+    """
+    touch reference.vdjidx
+    """
+
 }

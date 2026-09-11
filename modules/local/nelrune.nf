@@ -14,6 +14,8 @@ process NELRUNE {
     tuple val(meta), path('nelrune_out/nelrune-report.txt'), path('nelrune_out/nelrune.log'), path('nelrune_out/nelrune.metrics.tsv'), emit: qc
 
     script:
+    def healthPort = (params.nelrune_health_port_base as int) + (task.index as int) - 1
+    def healthArg = params.health_server ? "--health-port ${healthPort}" : '--no-health-server'
     """
     mkdir -p lumrik_tmp
     export LUMRIK_TMPDIR="\$PWD/lumrik_tmp"
@@ -29,6 +31,15 @@ process NELRUNE {
         --threads ${params.nelrune_threads} \\
         --min-cell-counts ${params.min_cell_counts} \\
         --outpath nelrune_out \\
-        --no-health-server
+        ${healthArg}
     """
+    stub:
+    """
+    mkdir -p nelrune_out/exonic nelrune_out/intronic
+    touch nelrune_out/exonic/matrix.mtx.gz nelrune_out/exonic/features.tsv.gz nelrune_out/exonic/barcodes.tsv.gz
+    touch nelrune_out/intronic/matrix.mtx.gz nelrune_out/intronic/features.tsv.gz nelrune_out/intronic/barcodes.tsv.gz
+    touch nelrune_out/nelrune.mapper.bam
+    touch nelrune_out/nelrune-report.txt nelrune_out/nelrune.log nelrune_out/nelrune.metrics.tsv
+    """
+
 }

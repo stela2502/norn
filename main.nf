@@ -3,6 +3,8 @@ include { BUILD_SPLICE_INDEX } from './modules/local/build_splice_index'
 include { BUILD_VDJ_INDEX }    from './modules/local/build_vdj_index'
 include { NELRUNE }            from './modules/local/nelrune'
 include { NELRUNE_VDJ }        from './modules/local/nelrune_vdj'
+include { CREATE_SEURAT }       from './modules/local/create_seurat'
+include { CREATE_SCANPY }       from './modules/local/create_scanpy'
 
 nextflow.enable.dsl=2
 
@@ -80,4 +82,37 @@ workflow {
 
         NELRUNE_VDJ(vdj_input_ch, vdj_idx_ch)
     }
+
+    if (params.make_seurat) {
+        seurat_input_ch = NELRUNE.out.exonic
+            .join(NELRUNE.out.intronic, by: 0)
+            .map { meta, exonic, intronic -> tuple(meta, [exonic, intronic]) }
+
+        if (params.run_vdj) {
+            seurat_input_ch = seurat_input_ch
+                .join(NELRUNE_VDJ.out.tables, by: 0)
+                .map { meta, matrices, vdj_calls, vdj_receptors, airr, vdj_mapping ->
+                    tuple(meta, matrices + [vdj_calls, vdj_receptors])
+                }
+        }
+
+        CREATE_SEURAT(seurat_input_ch)
+    }
+
+    if (params.make_scanpy) {
+        scanpy_input_ch = NELRUNE.out.exonic
+            .join(NELRUNE.out.intronic, by: 0)
+            .map { meta, exonic, intronic -> tuple(meta, [exonic, intronic]) }
+
+        if (params.run_vdj) {
+            scanpy_input_ch = scanpy_input_ch
+                .join(NELRUNE_VDJ.out.tables, by: 0)
+                .map { meta, matrices, vdj_calls, vdj_receptors, airr, vdj_mapping ->
+                    tuple(meta, matrices + [vdj_calls, vdj_receptors])
+                }
+        }
+
+        CREATE_SCANPY(scanpy_input_ch)
+    }
+
 }

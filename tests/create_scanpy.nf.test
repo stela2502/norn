@@ -1,0 +1,95 @@
+nextflow_process {
+    name "Test CREATE_SCANPY"
+    script "../modules/local/create_scanpy.nf"
+    process "CREATE_SCANPY"
+
+    tag "component"
+    tag "scanpy"
+
+    test("tiny RNA + VDJ object") {
+        when {
+            def fixtureRoot = new File(launchDir.toString(), "component-fixture")
+            def exonicDir = new File(fixtureRoot, "exonic")
+            def intronicDir = new File(fixtureRoot, "intronic")
+            exonicDir.mkdirs()
+            intronicDir.mkdirs()
+
+            // Generate MatrixMarket inputs from scratch for every test run.
+            // This keeps the fixture deterministic and avoids stale/appended .mtx
+            // content from previous patch/test iterations.
+            new File(exonicDir, "matrix.mtx").text = """%%MatrixMarket matrix coordinate integer general
+% tiny Norn nf-test exonic matrix
+3 3 6
+1 1 5
+2 1 1
+1 2 2
+3 2 7
+2 3 3
+3 3 4
+"""
+            new File(intronicDir, "matrix.mtx").text = """%%MatrixMarket matrix coordinate integer general
+% tiny Norn nf-test intronic matrix
+3 3 4
+1 1 1
+2 2 2
+3 2 1
+3 3 3
+"""
+
+            new File(exonicDir, "barcodes.tsv").text = new File(projectDir.toString(), "tests/data/exonic/barcodes.tsv").text
+            new File(exonicDir, "features.tsv").text = new File(projectDir.toString(), "tests/data/exonic/features.tsv").text
+            new File(intronicDir, "barcodes.tsv").text = new File(projectDir.toString(), "tests/data/intronic/barcodes.tsv").text
+            new File(intronicDir, "features.tsv").text = new File(projectDir.toString(), "tests/data/intronic/features.tsv").text
+
+            process {
+                """
+                input[0] = Channel.of([
+                    [id: 'test'],
+                    [
+                        file('${exonicDir.absolutePath}', checkIfExists: true),
+                        file('${intronicDir.absolutePath}', checkIfExists: true),
+                        file('${projectDir}/tests/data/vdj_calls.tsv', checkIfExists: true),
+                        file('${projectDir}/tests/data/vdj_receptors.tsv', checkIfExists: true)
+                    ]
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.object.size() == 1 },
+                { assert file(process.out.object[0][1]).name == 'test.scanpy.h5ad' },
+                { assert file(process.out.object[0][1]).size() > 0 }
+            )
+        }
+    }
+
+    test("stub") {
+        options "-stub"
+        when {
+            def fixtureRoot = new File(launchDir.toString(), "component-stub-fixture")
+            def exonicDir = new File(fixtureRoot, "exonic")
+            def intronicDir = new File(fixtureRoot, "intronic")
+            exonicDir.mkdirs()
+            intronicDir.mkdirs()
+
+            process {
+                """
+                input[0] = Channel.of([
+                    [id: 'test'],
+                    [
+                        file('${exonicDir.absolutePath}', checkIfExists: true),
+                        file('${intronicDir.absolutePath}', checkIfExists: true)
+                    ]
+                ])
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert file(process.out.object[0][1]).name == 'test.scanpy.h5ad'
+        }
+    }
+}

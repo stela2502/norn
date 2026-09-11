@@ -19,6 +19,8 @@ process NELRUNE_VDJ {
     def bdVersion = bdVersions[meta.chemistry]
     def bdArg = bdVersion ? "--bd-cell-version ${bdVersion}" : ''
     def seqArg = params.vdj_write_sequences ? '--write-sequences' : ''
+    def healthPort = (params.vdj_health_port_base as int) + (task.index as int) - 1
+    def healthArg = params.health_server ? "--health-port ${healthPort}" : '--no-health-server'
     """
     nelrune-vdj \\
         --exonic ${exonic} \\
@@ -28,6 +30,14 @@ process NELRUNE_VDJ {
         --threads ${params.vdj_threads} \\
         ${bdArg} \\
         ${seqArg} \\
-        --no-health-server
+        ${healthArg}
     """
+    stub:
+    """
+    mkdir -p vdj_out
+    printf 'cell\trecombination_id\tproductivity_status\n' > vdj_out/vdj_calls.tsv
+    printf 'cell\theavy_recombination_id\tlight_recombination_id\n' > vdj_out/vdj_receptors.tsv
+    touch vdj_out/airr_rearrangements.tsv vdj_out/vdj-mapping-info.txt
+    """
+
 }

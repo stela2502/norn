@@ -1,0 +1,5 @@
+cell	recombination_id	productivity_status
+CELL001	HC:TEST1	productive
+CELL001	LC:TEST1	productive
+CELL002	HC:TEST2	unproductive_stop
+CELL003	LC:TEST3	unknown_no_v_cds

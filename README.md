@@ -127,3 +127,21 @@ on an HPC system:
 Pin `params.container` to a released image tag (or, for maximum reproducibility,
 an OCI digest) rather than `latest`. Public GHCR images can be pulled anonymously
 by Singularity/Nextflow.
+
+## Testing
+
+Norn uses [nf-test](https://www.nf-test.com/) with the same process/pipeline testing model used by nf-core.
+
+Fast wiring smoke test (no bioinformatics tools or containers required):
+
+```bash
+nf-test test --tag stub
+```
+
+Run the real Seurat and Scanpy component tests with a container runtime, for example:
+
+```bash
+nf-test test --tag component --profile +singularity
+```
+
+Use `+docker` or `+apptainer` instead when appropriate. The component tests use tiny 3-cell 10x-style exon/intron matrices and VDJ tables under `tests/data/`.

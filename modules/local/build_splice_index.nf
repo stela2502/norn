@@ -14,4 +14,9 @@ process BUILD_SPLICE_INDEX {
         --annotation ${gtf} \\
         --index reference.splice.idx
     """
+    stub:
+    """
+    touch reference.splice.idx
+    """
+
 }

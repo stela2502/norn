@@ -1,0 +1,41 @@
+nextflow_pipeline {
+    name "Norn stub smoke test"
+    script "../main.nf"
+
+    tag "pipeline"
+    tag "stub"
+
+    test("full workflow wiring") {
+        options "-stub"
+
+        when {
+            def stubSamplesheet = new File(launchDir.toString(), "stub-samplesheet.csv")
+            stubSamplesheet.text = """sample,r1,r2,chemistry
+test,${projectDir}/tests/data/test_R1.fastq,${projectDir}/tests/data/test_R2.fastq,bd-v2-384
+"""
+
+            params {
+                samplesheet = stubSamplesheet.absolutePath
+                genome = "${projectDir}/tests/data/test.fa"
+                gtf = "${projectDir}/tests/data/test.gtf"
+                outdir = "${outputDir}/results"
+                run_vdj = true
+                make_seurat = true
+                make_scanpy = true
+                health_server = false
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert path("${outputDir}/results/test/seurat/test.seurat.rds").exists() },
+                { assert path("${outputDir}/results/test/scanpy/test.scanpy.h5ad").exists() },
+                { assert path("${outputDir}/results/test/vdj/vdj_out/vdj_calls.tsv").exists() },
+                { assert path("${outputDir}/results/test/nelrune/nelrune_out/nelrune.mapper.bam").exists() },
+                { assert path("${outputDir}/results/reference/splice/reference.splice.idx").exists() },
+                { assert path("${outputDir}/results/reference/vdj/reference.vdjidx").exists() }
+            )
+        }
+    }
+}

@@ -20,4 +20,10 @@ process BUILD_STAR_INDEX {
         --genomeFastaFiles ${genome} \\
         --sjdbGTFfile ${gtf}
     """
+    stub:
+    """
+    mkdir -p star_index
+    touch star_index/Genome
+    """
+
 }

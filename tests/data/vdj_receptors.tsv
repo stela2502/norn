@@ -1,0 +1,4 @@
+cell	heavy_recombination_id	light_recombination_id
+CELL001	HC:TEST1	LC:TEST1
+CELL002	HC:TEST2	
+CELL003		LC:TEST3
