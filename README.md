@@ -29,6 +29,10 @@ samples.csv
     +--> exonic MEX --------+
     |                       |
     +--> mapper BAM --------+--> NELRUNE_VDJ <---- VDJ index
+    |                             |
+    |                             +--> vdj_calls.tsv
+    |                             +--> vdj_receptors.tsv
+    |                             +--> airr_rearrangements.tsv
     |
     +--> intronic MEX
     +--> Nelrune QC/log/metrics
@@ -42,7 +46,6 @@ CSV columns:
 - `r1`: one or more R1 files separated by `;`
 - `r2`: matching R2 files separated by `;`
 - `chemistry`: exact Lumrik chemistry value
-- `cell_barcode_len`: optional; use `27` for legacy BD MEX normalization in `nelrune-vdj`
 
 ## Normal first run
 
@@ -57,6 +60,7 @@ nextflow run main.nf \
   --mapper star \
   --mapper_threads 8 \
   --nelrune_threads 8 \
+  --vdj_threads 8 \
   --outdir results
 ```
 
@@ -73,6 +77,8 @@ nextflow run main.nf \
 ```
 
 The published reference assets can also be reused explicitly in another Norn run with `--mapper_index`, `--splice_index`, and `--vdj_index`. These options are escape hatches, not the default workflow.
+
+For BD chemistries, Norn derives the matching `nelrune-vdj --bd-cell-version` automatically from the samplesheet chemistry (`bd-v1`, `bd-v2-96`, or `bd-v2-384`). This keeps the canonical corrected 27-base barcode and the positional BD/Rustody cell id in the same namespace without carrying the old `cell_barcode_len` workaround.
 
 ## First-class reference results
 
@@ -98,7 +104,7 @@ results/
 
 - STAR is the only mapper for which Norn currently builds the mapper index itself. Other mapper backends can still be used by supplying `--mapper_index` until they get their own reference module.
 - ONT/BAM sample mode is not wired yet.
-- Additional-feature FASTA/built-in wiring and standalone `lumrik-guides` orchestration are not wired yet; current Nelrune still couples feature finalization with Beacon calling.
+- Additional-feature FASTA/built-in wiring and standalone `lumrik-guides` orchestration are not wired yet.
 - No downstream R/Seurat/reporting yet.
 - No nf-core schema/templates/modules yet.
 - Container configuration hooks exist, but no canonical Lumrik container URI is invented here.

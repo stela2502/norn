@@ -26,8 +26,7 @@ def sampleChannel(samplesheet) {
             def r2s = row.r2.split(';').collect { file(it.trim(), checkIfExists: true) }
             if (r1s.size() != r2s.size()) error("sample ${id}: r1/r2 lane counts differ")
 
-            def cellLen = row.cell_barcode_len?.trim() ? row.cell_barcode_len.trim() as Integer : null
-            def meta = [id: id, chemistry: chemistry, cell_barcode_len: cellLen]
+            def meta = [id: id, chemistry: chemistry]
             tuple(meta, r1s, r2s)
         }
 }
