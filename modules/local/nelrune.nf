@@ -16,6 +16,7 @@ process NELRUNE {
     script:
     def healthPort = (params.nelrune_health_port_base as int) + (task.index as int) - 1
     def healthArg = params.health_server ? "--health-port ${healthPort}" : '--no-health-server'
+    def maxReadsArg = params.max_reads != null ? "--max-reads ${params.max_reads}" : ''
     """
     mkdir -p lumrik_tmp
     export LUMRIK_TMPDIR="\$PWD/lumrik_tmp"
@@ -30,6 +31,7 @@ process NELRUNE {
         --index ${splice_index} \\
         --threads ${params.nelrune_threads} \\
         --min-cell-counts ${params.min_cell_counts} \\
+        ${maxReadsArg} \\
         --outpath nelrune_out \\
         ${healthArg}
     """
