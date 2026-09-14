@@ -1,22 +1,24 @@
 process BUILD_SPLICE_INDEX {
     tag "${gtf.simpleName}"
-    publishDir "${params.outdir}/reference/splice", mode: params.reference_publish_mode
+    publishDir { index_publish_dir }, mode: params.reference_publish_mode
 
     input:
     path gtf
+    val index_publish_dir
+    val index_name
 
     output:
-    path 'reference.splice.idx', emit: index
+    path "${index_name}", emit: index
 
     script:
     """
     gtf-splice-index build \\
         --annotation ${gtf} \\
-        --index reference.splice.idx
+        --index ${index_name}
     """
     stub:
     """
-    touch reference.splice.idx
+    touch ${index_name}
     """
 
 }

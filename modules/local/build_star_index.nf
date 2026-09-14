@@ -1,29 +1,34 @@
 process BUILD_STAR_INDEX {
     tag "${genome.simpleName}"
-    publishDir "${params.outdir}/reference/star", mode: params.reference_publish_mode
+    publishDir { index_publish_dir }, mode: params.reference_publish_mode
 
     input:
     path genome
     path gtf
+    val index_publish_dir
+    val index_name
 
     output:
-    path 'star_index', emit: index
+    path "${index_name}", emit: index
 
     script:
     """
-    mkdir -p star_index
+    mkdir -p ${index_name}
 
     STAR \\
         --runMode genomeGenerate \\
         --runThreadN ${task.cpus} \\
-        --genomeDir star_index \\
+        --genomeDir ${index_name} \\
         --genomeFastaFiles ${genome} \\
         --sjdbGTFfile ${gtf}
     """
     stub:
     """
-    mkdir -p star_index
-    touch star_index/Genome
+    mkdir -p ${index_name}
+    touch ${index_name}/Genome
+    touch ${index_name}/SA
+    touch ${index_name}/SAindex
+    touch ${index_name}/genomeParameters.txt
     """
 
 }

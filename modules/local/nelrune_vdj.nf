@@ -1,5 +1,6 @@
 process NELRUNE_VDJ {
     tag "${meta.id}"
+    debug { params.health_server as boolean }
     publishDir "${params.outdir}/${meta.id}/vdj", mode: params.publish_mode
 
     input:
@@ -20,8 +21,10 @@ process NELRUNE_VDJ {
     def bdArg = bdVersion ? "--bd-cell-version ${bdVersion}" : ''
     def seqArg = params.vdj_write_sequences ? '--write-sequences' : ''
     def healthPort = (params.vdj_health_port_base as int) + (task.index as int) - 1
-    def healthArg = params.health_server ? "--health-port ${healthPort}" : '--no-health-server'
+    def healthArg = params.health_server ? "--health-port ${healthPort} --health-hostname \"\$health_host\"" : '--no-health-server'
     """
+    health_host="\$(hostname -s 2>/dev/null || hostname)"
+
     nelrune-vdj \\
         --exonic ${exonic} \\
         --bam ${bam} \\
@@ -30,7 +33,36 @@ process NELRUNE_VDJ {
         --threads ${params.vdj_threads} \\
         ${bdArg} \\
         ${seqArg} \\
-        ${healthArg}
+        ${healthArg} \\
+        >nelrune-vdj.console.log 2>&1 &
+    lumrik_pid=\$!
+
+    if ${params.health_server}; then
+        health_ready=0
+        for _ in \$(seq 1 150); do
+            if ! kill -0 "\$lumrik_pid" 2>/dev/null; then
+                break
+            fi
+            if (echo > /dev/tcp/127.0.0.1/${healthPort}) >/dev/null 2>&1; then
+                printf '\nNorn health server\n  NELRUNE_VDJ (%s)  http://%s:%s\n\n' '${meta.id}' "\$health_host" '${healthPort}'
+                health_ready=1
+                break
+            fi
+            sleep 0.2
+        done
+        if [[ "\$health_ready" -eq 0 ]] && kill -0 "\$lumrik_pid" 2>/dev/null; then
+            printf '\nNorn health server\n  NELRUNE_VDJ (%s)  starting on http://%s:%s\n\n' '${meta.id}' "\$health_host" '${healthPort}'
+        fi
+    fi
+
+    set +e
+    wait "\$lumrik_pid"
+    lumrik_status=\$?
+    set -e
+    if [[ "\$lumrik_status" -ne 0 ]]; then
+        tail -n 80 nelrune-vdj.console.log >&2 || true
+        exit "\$lumrik_status"
+    fi
     """
     stub:
     """

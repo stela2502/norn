@@ -1,24 +1,26 @@
 process BUILD_VDJ_INDEX {
     tag "${gtf.simpleName}"
-    publishDir "${params.outdir}/reference/vdj", mode: params.reference_publish_mode
+    publishDir { index_publish_dir }, mode: params.reference_publish_mode
 
     input:
     path gtf
     path genome
+    val index_publish_dir
+    val index_name
 
     output:
-    path 'reference.vdjidx', emit: index
+    path "${index_name}", emit: index
 
     script:
     """
     vdj-index \\
         --gtf ${gtf} \\
         --genome ${genome} \\
-        --out reference.vdjidx
+        --out ${index_name}
     """
     stub:
     """
-    touch reference.vdjidx
+    touch ${index_name}
     """
 
 }

@@ -13,6 +13,42 @@ def requireFile(value, label) {
     file(value, checkIfExists: true)
 }
 
+
+def starIndexState(value) {
+    if (!value) return [path: null, exists: false, empty: true, valid: false]
+
+    def p = java.nio.file.Paths.get(value.toString()).toAbsolutePath().normalize()
+    def exists = java.nio.file.Files.exists(p)
+    def empty = true
+
+    if (exists) {
+        if (!java.nio.file.Files.isDirectory(p)) {
+            return [path: p, exists: true, empty: false, valid: false]
+        }
+        def stream = java.nio.file.Files.list(p)
+        try {
+            empty = !stream.findAny().isPresent()
+        } finally {
+            stream.close()
+        }
+    }
+
+    def required = ['Genome', 'SA', 'SAindex', 'genomeParameters.txt']
+    def valid = exists && required.every { java.nio.file.Files.isRegularFile(p.resolve(it)) }
+    [path: p, exists: exists, empty: empty, valid: valid]
+}
+
+
+def fileIndexState(value) {
+    if (!value) return [path: null, exists: false, empty: true, valid: false]
+
+    def p = java.nio.file.Paths.get(value.toString()).toAbsolutePath().normalize()
+    def exists = java.nio.file.Files.exists(p)
+    def regular = exists && java.nio.file.Files.isRegularFile(p)
+    def size = regular ? java.nio.file.Files.size(p) : 0L
+    [path: p, exists: exists, empty: !exists || (regular && size == 0L), valid: regular && size > 0L]
+}
+
 def sampleChannel(samplesheet) {
     Channel
         .fromPath(samplesheet, checkIfExists: true)
@@ -45,32 +81,91 @@ workflow {
     gtf_ch = Channel.value(gtf)
     genome_ch = Channel.value(genome)
 
-    // Mapper reference. STAR is the built-in/default reference builder for milestone 1.
-    // An externally prepared mapper index remains an escape hatch for other mappers.
-    if (params.mapper_index) {
-        mapper_idx_ch = Channel.value(requireFile(params.mapper_index, '--mapper_index'))
-    } else {
-        if (params.mapper != 'star') {
+    // Mapper reference. For STAR, --mapper_index is a persistent index location:
+    // reuse a complete index there, or build/publish one there when the path is
+    // missing or empty. Without --mapper_index, keep the normal result location.
+    if (params.mapper != 'star') {
+        if (!params.mapper_index) {
             error("Norn can currently build mapper indexes only for --mapper star; supply --mapper_index for '${params.mapper}'")
         }
-        BUILD_STAR_INDEX(genome_ch, gtf_ch)
-        mapper_idx_ch = BUILD_STAR_INDEX.out.index
+        mapper_idx_ch = Channel.value(requireFile(params.mapper_index, '--mapper_index'))
+    } else {
+        def requestedMapperIndex = params.mapper_index ?: "${params.outdir}/reference/star/star_index"
+        def mapperState = starIndexState(requestedMapperIndex)
+
+        if (mapperState.valid) {
+            log.info "  STAR index: reusing ${mapperState.path}"
+            mapper_idx_ch = Channel.value(file(mapperState.path.toString(), checkIfExists: true))
+        } else {
+            if (mapperState.exists && !mapperState.empty) {
+                error("STAR index path exists but is incomplete: ${mapperState.path}. Remove/rename it or provide a valid STAR index.")
+            }
+
+            def indexPath = mapperState.path
+            def indexParent = indexPath.parent
+            if (indexParent == null) {
+                error("Unable to determine parent directory for STAR index: ${indexPath}")
+            }
+
+            log.info "  STAR index: building ${indexPath}"
+            BUILD_STAR_INDEX(
+                genome_ch,
+                gtf_ch,
+                Channel.value(indexParent.toString()),
+                Channel.value(indexPath.fileName.toString())
+            )
+            mapper_idx_ch = BUILD_STAR_INDEX.out.index
+        }
     }
 
-    // Lumrik splice index.
-    if (params.splice_index) {
-        splice_idx_ch = Channel.value(requireFile(params.splice_index, '--splice_index'))
+    // Lumrik splice index. --splice_index is a persistent index location:
+    // reuse a non-empty index there, or build/publish one there when missing/empty.
+    def requestedSpliceIndex = params.splice_index ?: "${params.outdir}/reference/splice/reference.splice.idx"
+    def spliceState = fileIndexState(requestedSpliceIndex)
+    if (spliceState.valid) {
+        log.info "  splice index: reusing ${spliceState.path}"
+        splice_idx_ch = Channel.value(file(spliceState.path.toString(), checkIfExists: true))
     } else {
-        BUILD_SPLICE_INDEX(gtf_ch)
+        if (spliceState.exists && !spliceState.empty) {
+            error("Splice index path exists but is not a regular non-empty file: ${spliceState.path}. Remove/rename it or provide a valid splice index.")
+        }
+        def indexPath = spliceState.path
+        def indexParent = indexPath.parent
+        if (indexParent == null) error("Unable to determine parent directory for splice index: ${indexPath}")
+
+        log.info "  splice index: building ${indexPath}"
+        BUILD_SPLICE_INDEX(
+            gtf_ch,
+            Channel.value(indexParent.toString()),
+            Channel.value(indexPath.fileName.toString())
+        )
         splice_idx_ch = BUILD_SPLICE_INDEX.out.index
     }
 
-    // VDJ reference is built independently of sample processing so it can be cached/reused.
-    if (params.vdj_index) {
-        vdj_idx_ch = Channel.value(requireFile(params.vdj_index, '--vdj_index'))
-    } else if (params.run_vdj) {
-        BUILD_VDJ_INDEX(gtf_ch, genome_ch)
-        vdj_idx_ch = BUILD_VDJ_INDEX.out.index
+    // VDJ reference follows the same persistent-index semantics when VDJ is enabled.
+    if (params.run_vdj) {
+        def requestedVdjIndex = params.vdj_index ?: "${params.outdir}/reference/vdj/reference.vdjidx"
+        def vdjState = fileIndexState(requestedVdjIndex)
+        if (vdjState.valid) {
+            log.info "  VDJ index: reusing ${vdjState.path}"
+            vdj_idx_ch = Channel.value(file(vdjState.path.toString(), checkIfExists: true))
+        } else {
+            if (vdjState.exists && !vdjState.empty) {
+                error("VDJ index path exists but is not a regular non-empty file: ${vdjState.path}. Remove/rename it or provide a valid VDJ index.")
+            }
+            def indexPath = vdjState.path
+            def indexParent = indexPath.parent
+            if (indexParent == null) error("Unable to determine parent directory for VDJ index: ${indexPath}")
+
+            log.info "  VDJ index: building ${indexPath}"
+            BUILD_VDJ_INDEX(
+                gtf_ch,
+                genome_ch,
+                Channel.value(indexParent.toString()),
+                Channel.value(indexPath.fileName.toString())
+            )
+            vdj_idx_ch = BUILD_VDJ_INDEX.out.index
+        }
     }
 
     NELRUNE(samples_ch, splice_idx_ch, mapper_idx_ch)
