@@ -17,9 +17,11 @@ process NELRUNE_VDJ {
         'bd-v2-96': 'v2.96',
         'bd-v2-384': 'v2.384'
     ]
-    def bdVersion = bdVersions[meta.chemistry]
+    def bdVersion = params.vdj_bd_cell_version ?: bdVersions[meta.chemistry]
     def bdArg = bdVersion ? "--bd-cell-version ${bdVersion}" : ''
     def seqArg = params.vdj_write_sequences ? '--write-sequences' : ''
+    def gtfArg = params.gtf ? "--gtf ${params.gtf}" : ''
+    def genomeArg = params.genome ? "--genome ${params.genome}" : ''
     def healthPort = (params.vdj_health_port_base as int) + (task.index as int) - 1
     def healthArg = params.health_server ? "--health-port ${healthPort} --health-hostname \"\$health_host\"" : '--no-health-server'
     """
