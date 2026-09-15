@@ -39,14 +39,21 @@ def starIndexState(value) {
 }
 
 
-def fileIndexState(value) {
-    if (!value) return [path: null, exists: false, empty: true, valid: false]
+def lumrikIndexState(value, runtimeId) {
+    if (!value) return [path: null, exists: false, empty: true, valid: false, runtimeMatch: false]
 
     def p = java.nio.file.Paths.get(value.toString()).toAbsolutePath().normalize()
     def exists = java.nio.file.Files.exists(p)
     def regular = exists && java.nio.file.Files.isRegularFile(p)
     def size = regular ? java.nio.file.Files.size(p) : 0L
-    [path: p, exists: exists, empty: !exists || (regular && size == 0L), valid: regular && size > 0L]
+    def marker = java.nio.file.Paths.get(p.toString() + '.lumrik-runtime')
+    def markerExists = java.nio.file.Files.isRegularFile(marker)
+    def recordedRuntime = markerExists ? java.nio.file.Files.readString(marker).trim() : null
+    def runtimeMatch = markerExists && recordedRuntime == runtimeId.toString()
+
+    [path: p, marker: marker, exists: exists, empty: !exists || (regular && size == 0L),
+     valid: regular && size > 0L && runtimeMatch, runtimeMatch: runtimeMatch,
+     recordedRuntime: recordedRuntime]
 }
 
 def sampleChannel(samplesheet) {
@@ -121,12 +128,14 @@ workflow {
     // Lumrik splice index. --splice_index is a persistent index location:
     // reuse a non-empty index there, or build/publish one there when missing/empty.
     def requestedSpliceIndex = params.splice_index ?: "${params.outdir}/reference/splice/reference.splice.idx"
-    def spliceState = fileIndexState(requestedSpliceIndex)
+    def spliceState = lumrikIndexState(requestedSpliceIndex, params.container)
     if (spliceState.valid) {
-        log.info "  splice index: reusing ${spliceState.path}"
+        log.info "  splice index: reusing ${spliceState.path} (${spliceState.recordedRuntime})"
         splice_idx_ch = Channel.value(file(spliceState.path.toString(), checkIfExists: true))
     } else {
-        if (spliceState.exists && !spliceState.empty) {
+        if (spliceState.exists && !spliceState.empty && !spliceState.runtimeMatch) {
+            log.info "  splice index: rebuilding ${spliceState.path} (missing/stale Lumrik runtime marker; current ${params.container})"
+        } else if (spliceState.exists && !spliceState.empty) {
             error("Splice index path exists but is not a regular non-empty file: ${spliceState.path}. Remove/rename it or provide a valid splice index.")
         }
         def indexPath = spliceState.path
@@ -137,7 +146,8 @@ workflow {
         BUILD_SPLICE_INDEX(
             gtf_ch,
             Channel.value(indexParent.toString()),
-            Channel.value(indexPath.fileName.toString())
+            Channel.value(indexPath.fileName.toString()),
+            Channel.value(params.container.toString())
         )
         splice_idx_ch = BUILD_SPLICE_INDEX.out.index
     }
@@ -145,12 +155,14 @@ workflow {
     // VDJ reference follows the same persistent-index semantics when VDJ is enabled.
     if (params.run_vdj) {
         def requestedVdjIndex = params.vdj_index ?: "${params.outdir}/reference/vdj/reference.vdjidx"
-        def vdjState = fileIndexState(requestedVdjIndex)
+        def vdjState = lumrikIndexState(requestedVdjIndex, params.container)
         if (vdjState.valid) {
-            log.info "  VDJ index: reusing ${vdjState.path}"
+            log.info "  VDJ index: reusing ${vdjState.path} (${vdjState.recordedRuntime})"
             vdj_idx_ch = Channel.value(file(vdjState.path.toString(), checkIfExists: true))
         } else {
-            if (vdjState.exists && !vdjState.empty) {
+            if (vdjState.exists && !vdjState.empty && !vdjState.runtimeMatch) {
+                log.info "  VDJ index: rebuilding ${vdjState.path} (missing/stale Lumrik runtime marker; current ${params.container})"
+            } else if (vdjState.exists && !vdjState.empty) {
                 error("VDJ index path exists but is not a regular non-empty file: ${vdjState.path}. Remove/rename it or provide a valid VDJ index.")
             }
             def indexPath = vdjState.path
@@ -162,7 +174,8 @@ workflow {
                 gtf_ch,
                 genome_ch,
                 Channel.value(indexParent.toString()),
-                Channel.value(indexPath.fileName.toString())
+                Channel.value(indexPath.fileName.toString()),
+                Channel.value(params.container.toString())
             )
             vdj_idx_ch = BUILD_VDJ_INDEX.out.index
         }
