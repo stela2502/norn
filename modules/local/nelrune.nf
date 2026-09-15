@@ -16,7 +16,7 @@ process NELRUNE {
 
     script:
     def healthPort = (params.nelrune_health_port_base as int) + (task.index as int) - 1
-    def healthArg = params.health_server ? "--health-port ${healthPort} --health-hostname \"\\$health_host\"" : '--no-health-server'
+    def healthArg = params.health_server ? "--health-port ${healthPort} --health-hostname \"\$(hostname -s 2>/dev/null || hostname)\"" : '--no-health-server'
     def arg = { flag, value -> value != null && value.toString() != '' ? "${flag} ${value}" : '' }
     def boolArg = { flag, value -> value as boolean ? flag : '' }
     def listArg = { flag, value ->
