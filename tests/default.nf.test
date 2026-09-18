@@ -19,6 +19,8 @@ test,${projectDir}/tests/data/test_R1.fastq,${projectDir}/tests/data/test_R2.fas
                 genome = "${projectDir}/tests/data/test.fa"
                 gtf = "${projectDir}/tests/data/test.gtf"
                 outdir = "${outputDir}/results"
+                splice_index = "${outputDir}/reference-cache/reference.splice.idx"
+                vdj_index = "${outputDir}/reference-cache/reference.vdjidx"
                 run_vdj = true
                 make_seurat = true
                 make_scanpy = true
@@ -33,8 +35,10 @@ test,${projectDir}/tests/data/test_R1.fastq,${projectDir}/tests/data/test_R2.fas
                 { assert path("${outputDir}/results/test/scanpy/test.scanpy.h5ad").exists() },
                 { assert path("${outputDir}/results/test/vdj/vdj_out/vdj_calls.tsv").exists() },
                 { assert path("${outputDir}/results/test/nelrune/nelrune_out/nelrune.mapper.bam").exists() },
-                { assert path("${outputDir}/results/reference/splice/reference.splice.idx").exists() },
-                { assert path("${outputDir}/results/reference/vdj/reference.vdjidx").exists() }
+                { assert path("${outputDir}/reference-cache/reference.splice.idx").exists() },
+                { assert path("${outputDir}/reference-cache/reference.vdjidx").exists() },
+                { assert !path("${outputDir}/results/reference/splice/reference.splice.idx").exists() },
+                { assert !path("${outputDir}/results/reference/vdj/reference.vdjidx").exists() }
             )
         }
     }

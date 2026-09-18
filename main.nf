@@ -125,9 +125,13 @@ workflow {
         }
     }
 
-    // Lumrik splice index. --splice_index is a persistent index location:
-    // reuse a non-empty index there, or build/publish one there when missing/empty.
-    def requestedSpliceIndex = params.splice_index ?: "${params.outdir}/reference/splice/reference.splice.idx"
+    // Lumrik indexes are persistent reference infrastructure, never analysis outputs.
+    // Their configured locations are authoritative: reuse them when valid or rebuild
+    // them in place when missing/stale, but never fall back to params.outdir.
+    if (!params.splice_index) {
+        error("--splice_index is required; provide the authoritative persistent Lumrik splice-index path")
+    }
+    def requestedSpliceIndex = params.splice_index
     def spliceState = lumrikIndexState(requestedSpliceIndex, params.container)
     if (spliceState.valid) {
         log.info "  splice index: reusing ${spliceState.path} (${spliceState.recordedRuntime})"
@@ -152,9 +156,12 @@ workflow {
         splice_idx_ch = BUILD_SPLICE_INDEX.out.index
     }
 
-    // VDJ reference follows the same persistent-index semantics when VDJ is enabled.
+    // VDJ reference follows the same authoritative persistent-index semantics.
     if (params.run_vdj) {
-        def requestedVdjIndex = params.vdj_index ?: "${params.outdir}/reference/vdj/reference.vdjidx"
+        if (!params.vdj_index) {
+            error("--vdj_index is required when --run_vdj is enabled; provide the authoritative persistent Lumrik VDJ-index path")
+        }
+        def requestedVdjIndex = params.vdj_index
         def vdjState = lumrikIndexState(requestedVdjIndex, params.container)
         if (vdjState.valid) {
             log.info "  VDJ index: reusing ${vdjState.path} (${vdjState.recordedRuntime})"

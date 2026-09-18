@@ -2,19 +2,19 @@
 
 Norn is a deliberately small Nextflow DSL2 workflow around the current Lumrik command-line programs. It is not yet an nf-core pipeline.
 
-The normal Norn input is **raw reference material**, not a collection of manually prebuilt indexes:
+The normal Norn input is raw reference material plus authoritative persistent locations for the Lumrik indexes:
 
 ```text
 genome.fa + annotation.gtf
           |
           +--> BUILD_STAR_INDEX   --> results/reference/star/star_index/
           |
-          +--> BUILD_SPLICE_INDEX --> results/reference/splice/reference.splice.idx
+          +--> BUILD_SPLICE_INDEX --> --splice_index
           |
-          +--> BUILD_VDJ_INDEX    --> results/reference/vdj/reference.vdjidx
+          +--> BUILD_VDJ_INDEX    --> --vdj_index
 ```
 
-Those are ordinary Nextflow processes. They are therefore independently cached by `-resume`, and the generated reference assets are also published as first-class Norn results for reuse by later runs.
+The Lumrik splice and VDJ indexes are reference infrastructure, not analysis results. Norn reuses or rebuilds them at the explicitly configured paths and never creates fallback copies below `--outdir`.
 
 ## Implemented sample graph
 
@@ -49,7 +49,7 @@ CSV columns:
 
 ## Normal first run
 
-Only the genome and annotation need to be supplied as reference inputs:
+Supply the genome and annotation plus authoritative persistent paths for the Lumrik splice and VDJ indexes:
 
 ```bash
 nextflow run main.nf \
@@ -57,6 +57,8 @@ nextflow run main.nf \
   --samplesheet assets/samplesheet.example.csv \
   --gtf /refs/genes.gtf \
   --genome /refs/genome.fa \
+  --splice_index /refs/lumrik/reference.splice.idx \
+  --vdj_index /refs/lumrik/reference.vdjidx \
   --mapper star \
   --mapper_threads 8 \
   --nelrune_threads 8 \
@@ -72,33 +74,19 @@ nextflow run main.nf \
   --samplesheet assets/samplesheet.example.csv \
   --gtf /refs/genes.gtf \
   --genome /refs/genome.fa \
+  --splice_index /refs/lumrik/reference.splice.idx \
+  --vdj_index /refs/lumrik/reference.vdjidx \
   --outdir results \
   -resume
 ```
 
-The published reference assets can also be reused explicitly in another Norn run with `--mapper_index`, `--splice_index`, and `--vdj_index`. These options are escape hatches, not the default workflow.
+`--splice_index` is required. `--vdj_index` is required when `--run_vdj` is enabled. These paths are the authoritative Lumrik indexes across runs; changing `--outdir` does not create or select another copy.
 
 For BD chemistries, Norn derives the matching `nelrune-vdj --bd-cell-version` automatically from the samplesheet chemistry (`bd-v1`, `bd-v2-96`, or `bd-v2-384`). This keeps the canonical corrected 27-base barcode and the positional BD/Rustody cell id in the same namespace without carrying the old `cell_barcode_len` workaround.
 
-## First-class reference results
+## Reference locations
 
-With the default `--outdir results`:
-
-```text
-results/
-  reference/
-    star/
-      star_index/
-    splice/
-      reference.splice.idx
-    vdj/
-      reference.vdjidx
-  <sample>/
-    nelrune/
-    vdj/
-```
-
-`reference_publish_mode='link'` and `publish_mode='link'` are the defaults, avoiding duplicate large BAM/index files when the Nextflow work directory and output directory share a filesystem. Set either mode to `copy` if hard links are unsuitable for the installation.
+STAR may still be built below `--outdir` when no `--mapper_index` is supplied. Lumrik splice and VDJ indexes are different: they live only at the configured `--splice_index` and `--vdj_index` paths. They are never published below the analysis results directory.
 
 ## Deliberate milestone-1 limits
 
