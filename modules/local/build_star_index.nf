@@ -15,12 +15,28 @@ process BUILD_STAR_INDEX {
     """
     mkdir -p ${index_name}
 
+    star_genome="${genome}"
+    case "${genome}" in
+        *.gz)
+            star_genome="star.genome.fa"
+            gzip -dc "${genome}" > "\$star_genome"
+            ;;
+    esac
+
+    star_gtf="${gtf}"
+    case "${gtf}" in
+        *.gz)
+            star_gtf="star.annotation.gtf"
+            gzip -dc "${gtf}" > "\$star_gtf"
+            ;;
+    esac
+
     STAR \\
         --runMode genomeGenerate \\
         --runThreadN ${task.cpus} \\
         --genomeDir ${index_name} \\
-        --genomeFastaFiles ${genome} \\
-        --sjdbGTFfile ${gtf}
+        --genomeFastaFiles "\$star_genome" \\
+        --sjdbGTFfile "\$star_gtf"
     """
     stub:
     """
