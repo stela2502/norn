@@ -1,0 +1,43 @@
+nextflow_process {
+    name "Test NELRUNE_PREPARE"
+    script "../modules/local/nelrune_prepare.nf"
+    process "NELRUNE_PREPARE"
+
+    tag "component"
+    tag "prepare"
+
+    test("stub prepared FASTQ shards and metadata") {
+        options "-stub"
+
+        when {
+            def fixtureRoot = new File(launchDir.toString(), "prepare-component-fixture")
+            fixtureRoot.mkdirs()
+            def r1 = new File(fixtureRoot, "test_R1.fastq")
+            def r2 = new File(fixtureRoot, "test_R2.fastq")
+            r1.text = "@stub\\nACGT\\n+\\nIIII\\n"
+            r2.text = "@stub\\nTGCA\\n+\\nIIII\\n"
+
+            process {
+                """
+                input[0] = Channel.of([
+                    [id: 'test', chemistry: 'bd-v2-384'],
+                    [file('${r1.absolutePath}', checkIfExists: true)],
+                    [file('${r2.absolutePath}', checkIfExists: true)]
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.prepared.size() == 1 },
+                { assert file(process.out.prepared[0][1]).name == 'prepare_out' },
+                { assert file("${process.out.prepared[0][1]}/prepare-manifest.tsv").exists() },
+                { assert file("${process.out.prepared[0][1]}/feature_observations.bin").exists() },
+                { assert file("${process.out.prepared[0][1]}/prepare-report.txt").exists() },
+                { assert file("${process.out.prepared[0][1]}/prepared_fastqs/prepared.thread-000.fastq.gz").exists() }
+            )
+        }
+    }
+}

@@ -22,8 +22,6 @@ test,${projectDir}/tests/data/test_R1.fastq,${projectDir}/tests/data/test_R2.fas
                 splice_index = "${outputDir}/reference-cache/reference.splice.idx"
                 vdj_index = "${outputDir}/reference-cache/reference.vdjidx"
                 run_vdj = true
-                make_seurat = true
-                make_scanpy = true
                 health_server = false
             }
         }
@@ -31,10 +29,10 @@ test,${projectDir}/tests/data/test_R1.fastq,${projectDir}/tests/data/test_R2.fas
         then {
             assertAll(
                 { assert workflow.success },
-                { assert path("${outputDir}/results/test/seurat/test.seurat.rds").exists() },
-                { assert path("${outputDir}/results/test/scanpy/test.scanpy.h5ad").exists() },
                 { assert path("${outputDir}/results/test/vdj/vdj_out/vdj_calls.tsv").exists() },
-                { assert path("${outputDir}/results/test/nelrune/nelrune_out/nelrune.mapper.bam").exists() },
+                { assert path("${outputDir}/results/test/prepare/prepare_out/prepare-manifest.tsv").exists() },
+                { assert path("${outputDir}/results/test/star/nelrune.mapper.bam").exists() },
+                { assert path("${outputDir}/results/test/nelrune/nelrune.mapper.bam").exists() },
                 { assert path("${outputDir}/reference-cache/reference.splice.idx").exists() },
                 { assert path("${outputDir}/reference-cache/reference.vdjidx").exists() },
                 { assert !path("${outputDir}/results/reference/splice/reference.splice.idx").exists() },

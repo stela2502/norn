@@ -126,10 +126,3 @@ Fast wiring smoke test (no bioinformatics tools or containers required):
 nf-test test --tag stub
 ```
 
-Run the real Seurat and Scanpy component tests with a container runtime, for example:
-
-```bash
-nf-test test --tag component --profile +singularity
-```
-
-Use `+docker` or `+apptainer` instead when appropriate. The component tests use tiny 3-cell 10x-style exon/intron matrices and VDJ tables under `tests/data/`.

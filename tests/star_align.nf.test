@@ -1,0 +1,46 @@
+nextflow_process {
+    name "Test STAR_ALIGN"
+    script "../modules/local/star.nf"
+    process "STAR_ALIGN"
+
+    tag "component"
+    tag "star"
+
+    test("stub prepared shards to BAM") {
+        options "-stub"
+
+        when {
+            def fixtureRoot = new File(launchDir.toString(), "star-component-fixture")
+            def prepareDir = new File(fixtureRoot, "prepare_out")
+            def fastqDir = new File(prepareDir, "prepared_fastqs")
+            def indexDir = new File(fixtureRoot, "star_index")
+            fastqDir.mkdirs()
+            indexDir.mkdirs()
+            new File(fastqDir, "prepared.thread-000.fastq.gz").text = "stub"
+            new File(fastqDir, "prepared.thread-001.fastq.gz").text = "stub"
+            new File(indexDir, "Genome").text = "stub"
+
+            process {
+                """
+                input[0] = Channel.of([
+                    [id: 'test', chemistry: 'bd-v2-384'],
+                    file('${prepareDir.absolutePath}', checkIfExists: true)
+                ])
+                input[1] = Channel.value(file('${indexDir.absolutePath}', checkIfExists: true))
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.bam.size() == 1 },
+                { assert file(process.out.bam[0][1]).name == 'nelrune.mapper.bam' },
+                { assert process.out.qc.size() == 1 },
+                { assert file(process.out.qc[0][1]).name == 'Log.final.out' },
+                { assert file(process.out.qc[0][2]).name == 'Log.out' },
+                { assert file(process.out.qc[0][3]).name == 'Log.progress.out' }
+            )
+        }
+    }
+}

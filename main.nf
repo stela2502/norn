@@ -1,10 +1,10 @@
 include { BUILD_STAR_INDEX }   from './modules/local/build_star_index'
 include { BUILD_SPLICE_INDEX } from './modules/local/build_splice_index'
 include { BUILD_VDJ_INDEX }    from './modules/local/build_vdj_index'
-include { NELRUNE }            from './modules/local/nelrune'
+include { NELRUNE_PREPARE }    from './modules/local/nelrune_prepare'
+include { STAR_ALIGN }         from './modules/local/star'
+include { NELRUNE_QUANT }      from './modules/local/nelrune_quant'
 include { NELRUNE_VDJ }        from './modules/local/nelrune_vdj'
-include { CREATE_SEURAT }       from './modules/local/create_seurat'
-include { CREATE_SCANPY }       from './modules/local/create_scanpy'
 
 nextflow.enable.dsl=2
 
@@ -188,46 +188,22 @@ workflow {
         }
     }
 
-    NELRUNE(samples_ch, splice_idx_ch, mapper_idx_ch)
+    NELRUNE_PREPARE(samples_ch)
+    STAR_ALIGN(NELRUNE_PREPARE.out.prepared, mapper_idx_ch)
+
+    quant_input_ch = STAR_ALIGN.out.bam
+        .join(NELRUNE_PREPARE.out.prepared, by: 0)
+        .map { meta, bam, prepare_dir -> tuple(meta, bam, prepare_dir) }
+
+    NELRUNE_QUANT(quant_input_ch, splice_idx_ch)
 
     if (params.run_vdj) {
-        vdj_input_ch = NELRUNE.out.exonic
-            .join(NELRUNE.out.bam, by: 0)
+        vdj_input_ch = NELRUNE_QUANT.out.exonic
+            .join(NELRUNE_QUANT.out.bam, by: 0)
             .map { meta, exonic, bam -> tuple(meta, exonic, bam) }
 
         NELRUNE_VDJ(vdj_input_ch, vdj_idx_ch)
     }
 
-    if (params.make_seurat) {
-        seurat_input_ch = NELRUNE.out.exonic
-            .join(NELRUNE.out.intronic, by: 0)
-            .map { meta, exonic, intronic -> tuple(meta, [exonic, intronic]) }
-
-        if (params.run_vdj) {
-            seurat_input_ch = seurat_input_ch
-                .join(NELRUNE_VDJ.out.tables, by: 0)
-                .map { meta, matrices, vdj_calls, vdj_receptors, airr, vdj_mapping ->
-                    tuple(meta, matrices + [vdj_calls, vdj_receptors])
-                }
-        }
-
-        CREATE_SEURAT(seurat_input_ch)
-    }
-
-    if (params.make_scanpy) {
-        scanpy_input_ch = NELRUNE.out.exonic
-            .join(NELRUNE.out.intronic, by: 0)
-            .map { meta, exonic, intronic -> tuple(meta, [exonic, intronic]) }
-
-        if (params.run_vdj) {
-            scanpy_input_ch = scanpy_input_ch
-                .join(NELRUNE_VDJ.out.tables, by: 0)
-                .map { meta, matrices, vdj_calls, vdj_receptors, airr, vdj_mapping ->
-                    tuple(meta, matrices + [vdj_calls, vdj_receptors])
-                }
-        }
-
-        CREATE_SCANPY(scanpy_input_ch)
-    }
 
 }

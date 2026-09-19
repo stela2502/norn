@@ -1,0 +1,51 @@
+nextflow_process {
+    name "Test NELRUNE_QUANT"
+    script "../modules/local/nelrune_quant.nf"
+    process "NELRUNE_QUANT"
+
+    tag "component"
+    tag "quant"
+
+    test("stub BAM plus preparation metadata to Nelrune outputs") {
+        options "-stub"
+
+        when {
+            def fixtureRoot = new File(launchDir.toString(), "quant-component-fixture")
+            def prepareDir = new File(fixtureRoot, "prepare_out")
+            def spliceIndex = new File(fixtureRoot, "reference.splice.idx")
+            def bam = new File(fixtureRoot, "nelrune.mapper.bam")
+            prepareDir.mkdirs()
+            new File(prepareDir, "prepare-manifest.tsv").text = "format\\tnelrune-prepare-v1\\n"
+            new File(prepareDir, "feature_observations.bin").text = ""
+            spliceIndex.text = "stub"
+            bam.text = "stub"
+
+            process {
+                """
+                input[0] = Channel.of([
+                    [id: 'test', chemistry: 'bd-v2-384'],
+                    file('${bam.absolutePath}', checkIfExists: true),
+                    file('${prepareDir.absolutePath}', checkIfExists: true)
+                ])
+                input[1] = Channel.value(file('${spliceIndex.absolutePath}', checkIfExists: true))
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.exonic.size() == 1 },
+                { assert file(process.out.exonic[0][1]).name == 'exonic' },
+                { assert file("${process.out.exonic[0][1]}/matrix.mtx.gz").exists() },
+                { assert process.out.intronic.size() == 1 },
+                { assert file(process.out.intronic[0][1]).name == 'intronic' },
+                { assert file("${process.out.intronic[0][1]}/matrix.mtx.gz").exists() },
+                { assert process.out.bam.size() == 1 },
+                { assert file(process.out.bam[0][1]).name == 'nelrune.mapper.bam' },
+                { assert process.out.qc.size() == 1 },
+                { assert file(process.out.qc[0][1]).name == 'nelrune-report.txt' }
+            )
+        }
+    }
+}
