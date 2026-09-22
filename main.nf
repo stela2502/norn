@@ -195,7 +195,7 @@ workflow {
         .join(NELRUNE_PREPARE.out.prepared, by: 0)
         .map { meta, bam, prepare_dir -> tuple(meta, bam, prepare_dir) }
 
-    NELRUNE_QUANT(quant_input_ch, splice_idx_ch)
+    NELRUNE_QUANT(quant_input_ch, splice_idx_ch, genome_ch)
 
     if (params.run_vdj) {
         vdj_input_ch = NELRUNE_QUANT.out.exonic

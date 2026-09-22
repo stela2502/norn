@@ -14,11 +14,13 @@ nextflow_process {
             def prepareDir = new File(fixtureRoot, "prepare_out")
             def spliceIndex = new File(fixtureRoot, "reference.splice.idx")
             def bam = new File(fixtureRoot, "nelrune.mapper.bam")
+            def genome = new File(fixtureRoot, "reference.fa")
             prepareDir.mkdirs()
             new File(prepareDir, "prepare-manifest.tsv").text = "format\\tnelrune-prepare-v1\\n"
             new File(prepareDir, "feature_observations.bin").text = ""
             spliceIndex.text = "stub"
             bam.text = "stub"
+            genome.text = ">chr1\nACGT\n"
 
             process {
                 """
@@ -28,6 +30,7 @@ nextflow_process {
                     file('${prepareDir.absolutePath}', checkIfExists: true)
                 ])
                 input[1] = Channel.value(file('${spliceIndex.absolutePath}', checkIfExists: true))
+                input[2] = Channel.value(file('${genome.absolutePath}', checkIfExists: true))
                 """
             }
         }

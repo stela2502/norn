@@ -5,6 +5,7 @@ process NELRUNE_QUANT {
     input:
     tuple val(meta), path(bam), path(prepare_dir)
     path splice_index
+    path genome
 
     output:
     tuple val(meta), path('nelrune_out/exonic'), emit: exonic
@@ -23,7 +24,11 @@ process NELRUNE_QUANT {
 
     def primerStructureArg = arg('--primer-structure', params.primer_structure)
     def whitelistArg = arg('--whitelist', params.whitelist)
-    def genomeArg = params.genome ? "--genome ${params.genome}" : ''
+    // The genome FASTA is a SNP-only runtime dependency. Norn still stages it
+    // through a path input so that, when SNP collection is requested, the
+    // container sees the same reference that Norn used to build its indexes.
+    def collectSnps = params.vcf != null && params.vcf.toString().trim() != ''
+    def genomeArg = collectSnps ? "--genome ${genome}" : ''
     def vcfArg = arg('--vcf', params.vcf)
     def maxReadsArg = arg('--max-reads', params.max_reads)
     def readTagArg = listArg('--read-tag-table', params.read_tag_table)
