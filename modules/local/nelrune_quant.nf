@@ -1,5 +1,6 @@
 process NELRUNE_QUANT {
     tag "${meta.id}"
+    debug { params.health_server as boolean }
     publishDir "${params.outdir}/${meta.id}/nelrune", mode: params.publish_mode
 
     input:
@@ -33,11 +34,14 @@ process NELRUNE_QUANT {
     def readTagArg = listArg('--read-tag-table', params.read_tag_table)
     def bamOutArg = arg('--bam-out', params.bam_out)
     def featuresArg = listArg('--additional-features', params.additional_features)
-    def minCellCountsArg = arg('--min-cell-counts', params.min_umi_counts)
+    def minUmiCountArg = arg('--min-umi-count', params.min_umi_counts)
+    def healthPort = (params.nelrune_health_port_base as int) + (task.index as int) - 1
+    def healthArg = params.health_server ? "--health-port ${healthPort} --health-hostname \"\$health_host\"" : '--no-health-server'
 
     """
     mkdir -p lumrik_tmp
     export LUMRIK_TMPDIR="\$PWD/lumrik_tmp"
+    health_host="\$(hostname -s 2>/dev/null || hostname)"
 
     nelrune quant \\
         --bam ${bam} \\
@@ -72,11 +76,37 @@ process NELRUNE_QUANT {
         --cell-tag ${params.cell_tag} \\
         --umi-tag ${params.umi_tag} \\
         ${bamOutArg} \\
-        ${featuresArg} \\
-        --additional-feature-min-hits ${params.additional_feature_min_hits} \\
-        ${minCellCountsArg} \\
+        ${minUmiCountArg} \\
         --outpath nelrune_out \\
-        ${params.nelrune_quant_extra_args ?: ''}
+        ${healthArg} \\
+        ${params.nelrune_quant_extra_args ?: ''} \\
+        >nelrune-quant.console.log 2>&1 &
+    lumrik_pid=\$!
+
+    if ${params.health_server}; then
+        health_ready=0
+        for _ in \$(seq 1 150); do
+            if ! kill -0 "\$lumrik_pid" 2>/dev/null; then break; fi
+            if (echo > /dev/tcp/127.0.0.1/${healthPort}) >/dev/null 2>&1; then
+                printf '\nNorn health server\n  NELRUNE_QUANT (%s)  http://%s:%s\n\n' '${meta.id}' "\$health_host" '${healthPort}'
+                health_ready=1
+                break
+            fi
+            sleep 0.2
+        done
+        if [[ "\$health_ready" -eq 0 ]] && kill -0 "\$lumrik_pid" 2>/dev/null; then
+            printf '\nNorn health server\n  NELRUNE_QUANT (%s)  starting on http://%s:%s\n\n' '${meta.id}' "\$health_host" '${healthPort}'
+        fi
+    fi
+
+    set +e
+    wait "\$lumrik_pid"
+    lumrik_status=\$?
+    set -e
+    if [[ "\$lumrik_status" -ne 0 ]]; then
+        tail -n 80 nelrune-quant.console.log >&2 || true
+        exit "\$lumrik_status"
+    fi
     """
 
     stub:

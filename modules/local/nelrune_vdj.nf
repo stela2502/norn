@@ -28,7 +28,6 @@ process NELRUNE_VDJ {
     health_host="\$(hostname -s 2>/dev/null || hostname)"
 
     nelrune-vdj \\
-        --exonic ${exonic} \\
         --bam ${bam} \\
         --index ${vdj_index} \\
         --out vdj_out \\
