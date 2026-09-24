@@ -4,7 +4,7 @@ process NELRUNE_VDJ {
     publishDir "${params.outdir}/${meta.id}/vdj", mode: params.publish_mode
 
     input:
-    tuple val(meta), path(exonic), path(bam)
+    tuple val(meta), path(bam)
     path vdj_index
 
     output:

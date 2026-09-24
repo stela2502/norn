@@ -5,6 +5,7 @@ include { NELRUNE_PREPARE }    from './modules/local/nelrune_prepare'
 include { STAR_ALIGN }         from './modules/local/star'
 include { NELRUNE_QUANT }      from './modules/local/nelrune_quant'
 include { NELRUNE_VDJ }        from './modules/local/nelrune_vdj'
+include { SC_ANALYSE }          from './modules/local/sc_analyse'
 
 nextflow.enable.dsl=2
 
@@ -78,6 +79,7 @@ def sampleChannel(samplesheet) {
 
 workflow {
     if (!params.samplesheet) error('Use --samplesheet samples.csv')
+    if (params.min_umi_counts == null) error('Use --min_umi_counts <UMIs>; the GEX cell-depth threshold is an explicit required input')
 
     // Genome + annotation are Norn's primary reference inputs. By default Norn
     // turns them into all reusable indexes and publishes those as first-class results.
@@ -196,13 +198,12 @@ workflow {
         .map { meta, bam, prepare_dir -> tuple(meta, bam, prepare_dir) }
 
     NELRUNE_QUANT(quant_input_ch, splice_idx_ch, genome_ch)
+    SC_ANALYSE(NELRUNE_QUANT.out.exonic)
 
     if (params.run_vdj) {
-        vdj_input_ch = NELRUNE_QUANT.out.exonic
-            .join(NELRUNE_QUANT.out.bam, by: 0)
-            .map { meta, exonic, bam -> tuple(meta, exonic, bam) }
-
-        NELRUNE_VDJ(vdj_input_ch, vdj_idx_ch)
+        // VDJ is an independent biological assay. Feed it the mapper BAM directly;
+        // GEX cell calling must not determine which receptor-bearing cells are inspected.
+        NELRUNE_VDJ(STAR_ALIGN.out.bam, vdj_idx_ch)
     }
 
 

@@ -23,6 +23,7 @@ test,${projectDir}/tests/data/test_R1.fastq,${projectDir}/tests/data/test_R2.fas
                 vdj_index = "${outputDir}/reference-cache/reference.vdjidx"
                 run_vdj = true
                 health_server = false
+                min_umi_counts = 400
             }
         }
 
@@ -32,7 +33,7 @@ test,${projectDir}/tests/data/test_R1.fastq,${projectDir}/tests/data/test_R2.fas
                 { assert path("${outputDir}/results/test/vdj/vdj_out/vdj_calls.tsv").exists() },
                 { assert path("${outputDir}/results/test/prepare/prepare_out/prepare-manifest.tsv").exists() },
                 { assert path("${outputDir}/results/test/star/nelrune.mapper.bam").exists() },
-                { assert path("${outputDir}/results/test/nelrune/nelrune.mapper.bam").exists() },
+                { assert path("${outputDir}/results/test/sc_analysis/.stub").exists() },
                 { assert path("${outputDir}/reference-cache/reference.splice.idx").exists() },
                 { assert path("${outputDir}/reference-cache/reference.vdjidx").exists() },
                 { assert !path("${outputDir}/results/reference/splice/reference.splice.idx").exists() },

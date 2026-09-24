@@ -44,8 +44,6 @@ nextflow_process {
                 { assert process.out.intronic.size() == 1 },
                 { assert file(process.out.intronic[0][1]).name == 'intronic' },
                 { assert file("${process.out.intronic[0][1]}/matrix.mtx.gz").exists() },
-                { assert process.out.bam.size() == 1 },
-                { assert file(process.out.bam[0][1]).name == 'nelrune.mapper.bam' },
                 { assert process.out.qc.size() == 1 },
                 { assert file(process.out.qc[0][1]).name == 'nelrune-report.txt' }
             )

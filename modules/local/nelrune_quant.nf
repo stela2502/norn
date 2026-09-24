@@ -10,7 +10,6 @@ process NELRUNE_QUANT {
     output:
     tuple val(meta), path('nelrune_out/exonic'), emit: exonic
     tuple val(meta), path('nelrune_out/intronic'), emit: intronic
-    tuple val(meta), path(bam), emit: bam
     tuple val(meta), path('nelrune_out/nelrune-report.txt'), emit: qc
 
     script:
@@ -34,7 +33,7 @@ process NELRUNE_QUANT {
     def readTagArg = listArg('--read-tag-table', params.read_tag_table)
     def bamOutArg = arg('--bam-out', params.bam_out)
     def featuresArg = listArg('--additional-features', params.additional_features)
-    def minCellCountsArg = arg('--min-cell-counts', params.min_cell_counts)
+    def minCellCountsArg = arg('--min-cell-counts', params.min_umi_counts)
 
     """
     mkdir -p lumrik_tmp
