@@ -26,7 +26,7 @@ samples.csv
     v
  NELRUNE <--------- STAR index + Lumrik splice index
     |
-    +--> exonic MEX --------+
+    +--> filtered/exonic MEX +
     |                       |
     +--> mapper BAM --------+--> NELRUNE_VDJ <---- VDJ index
     |                             |
@@ -34,7 +34,8 @@ samples.csv
     |                             +--> vdj_receptors.tsv
     |                             +--> airr_rearrangements.tsv
     |
-    +--> intronic MEX
+    +--> filtered/intronic MEX
+    +--> raw/{exonic,intronic,...} MEX
     +--> Nelrune QC/log/metrics
 ```
 
@@ -60,9 +61,9 @@ nextflow run main.nf \
   --splice_index /refs/lumrik/reference.splice.idx \
   --vdj_index /refs/lumrik/reference.vdjidx \
   --mapper star \
-  --mapper_threads 8 \
-  --nelrune_threads 8 \
-  --vdj_threads 8 \
+  --mapper_threads 18 \
+  --nelrune_threads 18 \
+  --vdj_threads 18 \
   --outdir results
 ```
 
@@ -82,7 +83,7 @@ nextflow run main.nf \
 
 `--splice_index` is required. `--vdj_index` is required when `--run_vdj` is enabled. These paths are the authoritative Lumrik indexes across runs; changing `--outdir` does not create or select another copy.
 
-For BD chemistries, Norn derives the matching `nelrune-vdj --bd-cell-version` automatically from the samplesheet chemistry (`bd-v1`, `bd-v2-96`, or `bd-v2-384`). This keeps the canonical corrected 27-base barcode and the positional BD/Rustody cell id in the same namespace without carrying the old `cell_barcode_len` workaround.
+For BD chemistries, Norn derives the matching `nelrune vdj --bd-cell-version` automatically from the samplesheet chemistry (`bd-v1`, `bd-v2-96`, or `bd-v2-384`). This keeps the canonical corrected 27-base barcode and the positional BD/Rustody cell id in the same namespace without carrying the old `cell_barcode_len` workaround.
 
 ## Reference locations
 

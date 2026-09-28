@@ -8,6 +8,7 @@ process NELRUNE_PREPARE {
 
     output:
     tuple val(meta), path('prepare_out'), emit: prepared
+    tuple val(meta), path('prepare_out/nelrune_prepare.log.jaml'), path('prepare_out/nelrune_prepare.log.html'), optional: true, emit: run_log
 
     script:
     def arg = { flag, value -> value != null && value.toString() != '' ? "${flag} ${value}" : '' }
@@ -80,6 +81,6 @@ process NELRUNE_PREPARE {
     mkdir -p prepare_out/prepared_fastqs
     printf '@stub\\nACGT\\n+\\nIIII\\n' | gzip -c > prepare_out/prepared_fastqs/prepared.thread-000.fastq.gz
     printf 'format\\tnelrune-prepare-v1\\ncell_barcode_len\\t27\\nfastq\\tprepared_fastqs/prepared.thread-000.fastq.gz\\n' > prepare_out/prepare-manifest.tsv
-    touch prepare_out/feature_observations.bin prepare_out/prepare-report.txt
+    touch prepare_out/feature_observations.bin prepare_out/prepare-report.txt prepare_out/preparelog.jaml prepare_out/prepare.log.html
     """
 }

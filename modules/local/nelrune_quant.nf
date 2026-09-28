@@ -9,9 +9,14 @@ process NELRUNE_QUANT {
     path genome
 
     output:
-    tuple val(meta), path('nelrune_out/exonic'), emit: exonic
-    tuple val(meta), path('nelrune_out/intronic'), emit: intronic
+    tuple val(meta), path('nelrune_out/filtered/exprs'), emit: filtered_exprs
+    tuple val(meta), path('nelrune_out/filtered/exonic_exprs'), emit: filtered_exonic_exprs
+    tuple val(meta), path('nelrune_out/filtered/intronic_exprs'), emit: filtered_intronic_exprs
+    tuple val(meta), path('nelrune_out/raw/exprs'), emit: raw_exprs
+    tuple val(meta), path('nelrune_out/raw/exonic_exprs'), emit: raw_exonic_exprs
+    tuple val(meta), path('nelrune_out/raw/intronic_exprs'), emit: raw_intronic_exprs
     tuple val(meta), path('nelrune_out/nelrune-report.txt'), emit: qc
+    tuple val(meta), path('nelrune_out/quantlog.jaml'), path('nelrune_out/quant.log.html'), emit: run_log
 
     script:
     def arg = { flag, value -> value != null && value.toString() != '' ? "${flag} ${value}" : '' }
@@ -56,6 +61,7 @@ process NELRUNE_QUANT {
         ${vcfArg} \\
         --quant-mode ${params.quant_mode} \\
         --min-mapq ${params.min_mapq} \\
+        --threads ${params.nelrune_quant_threads} \\
         ${maxReadsArg} \\
         ${boolArg('--read1-only', params.read1_only)} \\
         ${boolArg('--no-genome-refine', params.no_genome_refine)} \\
@@ -111,9 +117,11 @@ process NELRUNE_QUANT {
 
     stub:
     """
-    mkdir -p nelrune_out/exonic nelrune_out/intronic
-    touch nelrune_out/exonic/matrix.mtx.gz nelrune_out/exonic/features.tsv.gz nelrune_out/exonic/barcodes.tsv.gz
-    touch nelrune_out/intronic/matrix.mtx.gz nelrune_out/intronic/features.tsv.gz nelrune_out/intronic/barcodes.tsv.gz
-    touch nelrune_out/nelrune-report.txt
+    for layer in exprs exonic_exprs intronic_exprs; do
+        mkdir -p nelrune_out/filtered/\$layer nelrune_out/raw/\$layer
+        touch nelrune_out/filtered/\$layer/matrix.mtx.gz nelrune_out/filtered/\$layer/features.tsv.gz nelrune_out/filtered/\$layer/barcodes.tsv.gz
+        touch nelrune_out/raw/\$layer/matrix.mtx.gz nelrune_out/raw/\$layer/features.tsv.gz nelrune_out/raw/\$layer/barcodes.tsv.gz
+    done
+    touch nelrune_out/nelrune-report.txt nelrune_out/quantlog.jaml nelrune_out/quant.log.html
     """
 }

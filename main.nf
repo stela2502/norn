@@ -5,6 +5,7 @@ include { NELRUNE_PREPARE }    from './modules/local/nelrune_prepare'
 include { STAR_ALIGN }         from './modules/local/star'
 include { NELRUNE_QUANT }      from './modules/local/nelrune_quant'
 include { NELRUNE_VDJ }        from './modules/local/nelrune_vdj'
+include { CLONOMAP }           from './modules/local/clonomap'
 include { SC_ANALYSE }          from './modules/local/sc_analyse'
 
 nextflow.enable.dsl=2
@@ -198,12 +199,20 @@ workflow {
         .map { meta, bam, prepare_dir -> tuple(meta, bam, prepare_dir) }
 
     NELRUNE_QUANT(quant_input_ch, splice_idx_ch, genome_ch)
-    SC_ANALYSE(NELRUNE_QUANT.out.exonic)
 
     if (params.run_vdj) {
         // VDJ is an independent biological assay. Feed it the mapper BAM directly;
         // GEX cell calling must not determine which receptor-bearing cells are inspected.
         NELRUNE_VDJ(STAR_ALIGN.out.bam, vdj_idx_ch)
+        CLONOMAP(NELRUNE_VDJ.out.tables)
+        analysis_input_ch = NELRUNE_QUANT.out.filtered_exprs
+            .join(CLONOMAP.out.cells, by: 0)
+            .map { meta, exprs, clonomap_cells -> tuple(meta, exprs, clonomap_cells) }
+        SC_ANALYSE(analysis_input_ch)
+    } else {
+        analysis_input_ch = NELRUNE_QUANT.out.filtered_exprs
+            .map { meta, exprs -> tuple(meta, exprs, exprs) }
+        SC_ANALYSE(analysis_input_ch)
     }
 
 

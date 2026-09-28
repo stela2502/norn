@@ -38,12 +38,22 @@ nextflow_process {
         then {
             assertAll(
                 { assert process.success },
-                { assert process.out.exonic.size() == 1 },
-                { assert file(process.out.exonic[0][1]).name == 'exonic' },
-                { assert file("${process.out.exonic[0][1]}/matrix.mtx.gz").exists() },
-                { assert process.out.intronic.size() == 1 },
-                { assert file(process.out.intronic[0][1]).name == 'intronic' },
-                { assert file("${process.out.intronic[0][1]}/matrix.mtx.gz").exists() },
+                { assert process.out.filtered_exprs.size() == 1 },
+                { assert file(process.out.filtered_exprs[0][1]).name == 'exprs' },
+                { assert file("${process.out.filtered_exprs[0][1]}/matrix.mtx.gz").exists() },
+                { assert process.out.filtered_exonic_exprs.size() == 1 },
+                { assert file(process.out.filtered_exonic_exprs[0][1]).name == 'exonic_exprs' },
+                { assert process.out.filtered_intronic_exprs.size() == 1 },
+                { assert file(process.out.filtered_intronic_exprs[0][1]).name == 'intronic_exprs' },
+                { assert file("${process.out.filtered_intronic_exprs[0][1]}/matrix.mtx.gz").exists() },
+                { assert process.out.raw_exprs.size() == 1 },
+                { assert file(process.out.raw_exprs[0][1]).name == 'exprs' },
+                { assert file("${process.out.raw_exprs[0][1]}/matrix.mtx.gz").exists() },
+                { assert process.out.raw_exonic_exprs.size() == 1 },
+                { assert file(process.out.raw_exonic_exprs[0][1]).name == 'exonic_exprs' },
+                { assert process.out.raw_intronic_exprs.size() == 1 },
+                { assert file(process.out.raw_intronic_exprs[0][1]).name == 'intronic_exprs' },
+                { assert file("${process.out.raw_intronic_exprs[0][1]}/matrix.mtx.gz").exists() },
                 { assert process.out.qc.size() == 1 },
                 { assert file(process.out.qc[0][1]).name == 'nelrune-report.txt' }
             )

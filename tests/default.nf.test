@@ -33,6 +33,7 @@ test,${projectDir}/tests/data/test_R1.fastq,${projectDir}/tests/data/test_R2.fas
                 { assert path("${outputDir}/results/test/vdj/vdj_out/vdj_calls.tsv").exists() },
                 { assert path("${outputDir}/results/test/prepare/prepare_out/prepare-manifest.tsv").exists() },
                 { assert path("${outputDir}/results/test/star/nelrune.mapper.bam").exists() },
+                { assert path("${outputDir}/results/test/clonomap/clonomap_out/cells.tsv").exists() },
                 { assert path("${outputDir}/results/test/sc_analysis/.stub").exists() },
                 { assert path("${outputDir}/reference-cache/reference.splice.idx").exists() },
                 { assert path("${outputDir}/reference-cache/reference.vdjidx").exists() },
