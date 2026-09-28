@@ -28,7 +28,7 @@ process NELRUNE_VDJ {
     """
     health_host="\$(hostname -s 2>/dev/null || hostname)"
 
-    nelrune-vdj \\
+    nelrune vdj \\
         --bam ${bam} \\
         --index ${vdj_index} \\
         --out vdj_out \\
@@ -37,7 +37,7 @@ process NELRUNE_VDJ {
         ${seqArg} \\
         ${healthArg} \\
         ${params.nelrune_vdj_extra_args ?: ''} \\
-        >nelrune-vdj.console.log 2>&1 &
+        >nelrune vdj.console.log 2>&1 &
     lumrik_pid=\$!
 
     if ${params.health_server}; then
@@ -63,7 +63,7 @@ process NELRUNE_VDJ {
     lumrik_status=\$?
     set -e
     if [[ "\$lumrik_status" -ne 0 ]]; then
-        tail -n 80 nelrune-vdj.console.log >&2 || true
+        tail -n 80 nelrune vdj.console.log >&2 || true
         exit "\$lumrik_status"
     fi
     """
