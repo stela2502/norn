@@ -11,10 +11,7 @@ process CLONOMAP {
 
     script:
     """
-    mkdir -p vdj_input
-    ln -s "${vdj_calls}" vdj_input/vdj_calls.tsv
-    ln -s "${airr}" vdj_input/airr_rearrangements.tsv
-    clonomap_family --vdj-out vdj_input --out clonomap_out ${params.clonomap_extra_args ?: ''}
+    clonomap_family --vdj-out . --out clonomap_out ${params.clonomap_extra_args ?: ''}
     """
 
     stub:
