@@ -12,10 +12,10 @@ process SC_ANALYSE {
     def excludeVdjArg = params.sc_analyse_exclude_vdj ? '--exclude-vdj-before-normalization' : ''
     """
     mkdir -p analysis_input/filtered
-    ln -s "${exprs}" analysis_input/filtered/exprs
+    ln -s "\$(readlink -f "${exprs}")" analysis_input/filtered/exprs
     if [[ -f "${clonomap_input}" ]]; then
         mkdir -p analysis_input/clonomap_out
-        ln -s "${clonomap_input}" analysis_input/clonomap_out/cells.tsv
+        ln -s "\$(readlink -f "${clonomap_input}")" analysis_input/clonomap_out/cells.tsv
     fi
     sc-analyse analysis_input \
         --out sc_analysis \
