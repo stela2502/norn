@@ -53,15 +53,15 @@ process NELRUNE_VDJ {
             fi
             sleep 0.2
         done
-        if [[ "\$health_ready" -eq 0 ]] && kill -0 "\$lumrik_pid" 2>/dev/null; then
-            printf '\nNorn health server\n  NELRUNE_VDJ (%s)  starting on http://%s:%s\n\n' '${meta.id}' "\$health_host" '${healthPort}'
-        fi
     fi
 
     set +e
     wait "\$lumrik_pid"
     lumrik_status=\$?
     set -e
+    if ${params.health_server} && [[ "\$health_ready" -eq 1 ]]; then
+        printf '\nNorn health server\n  NELRUNE_VDJ (%s)  stopped\n\n' '${meta.id}'
+    fi
     if [[ "\$lumrik_status" -ne 0 ]]; then
         tail -n 80 vdj.console.log >&2 || true
         exit "\$lumrik_status"
