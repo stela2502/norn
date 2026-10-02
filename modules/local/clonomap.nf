@@ -11,7 +11,9 @@ process CLONOMAP {
 
     script:
     """
-    clonomap_family --vdj-out . --out clonomap_out ${params.clonomap_extra_args ?: ''}
+    def plots_arg = params.clonomap_plots ? '--plots' : ''
+
+    clonomap_family --vdj-out . --out clonomap_out ${plots_arg} ${params.clonomap_extra_args ?: ''}
     """
 
     stub:
