@@ -4,6 +4,7 @@ process CLONOMAP {
 
     input:
     tuple val(meta), path(vdj_calls), path(vdj_receptors), path(airr), path(mapping_info)
+    path model_vault
 
     output:
     tuple val(meta), path('clonomap_out/cells.tsv'), emit: cells
@@ -11,9 +12,9 @@ process CLONOMAP {
 
     script:
     """
-    def plots_arg = params.clonomap_plots ? '--plots' : ''
+    def plots_arg = params.clonomap_plots ? '' : '--no-plots'
 
-    clonomap_family --vdj-out . --out clonomap_out ${plots_arg} ${params.clonomap_extra_args ?: ''}
+    clonomap --vdj-out . --out clonomap_out --vault ${model_vault} ${plots_arg} ${params.clonomap_extra_args ?: ''}
     """
 
     stub:

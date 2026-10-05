@@ -201,10 +201,15 @@ workflow {
     NELRUNE_QUANT(quant_input_ch, splice_idx_ch, genome_ch)
 
     if (params.run_vdj) {
+        if (!params.clonomap_vault) {
+            error("--clonomap_vault is required when --run_vdj is enabled")
+        }
+        clonomap_vault_ch = Channel.value(requireFile(params.clonomap_vault, '--clonomap_vault'))
+
         // VDJ is an independent biological assay. Feed it the mapper BAM directly;
         // GEX cell calling must not determine which receptor-bearing cells are inspected.
         NELRUNE_VDJ(STAR_ALIGN.out.bam, vdj_idx_ch)
-        CLONOMAP(NELRUNE_VDJ.out.tables)
+        CLONOMAP(NELRUNE_VDJ.out.tables, clonomap_vault_ch)
         analysis_input_ch = NELRUNE_QUANT.out.filtered_exprs
             .join(CLONOMAP.out.cells, by: 0)
             .map { meta, exprs, clonomap_cells -> tuple(meta, exprs, clonomap_cells) }
