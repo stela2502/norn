@@ -11,8 +11,8 @@ process CLONOMAP {
     tuple val(meta), path('clonomap_out'), emit: results
 
     script:
-    """
     def plots_arg = params.clonomap_plots ? '' : '--no-plots'
+    """
 
     clonomap --vdj-out . --out clonomap_out --vault ${model_vault} ${plots_arg} ${params.clonomap_extra_args ?: ''}
     """

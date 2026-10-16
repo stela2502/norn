@@ -1,0 +1,31 @@
+nextflow_process {
+    name "Test BUILD_SPLICE_INDEX"
+    script "../modules/local/build_splice_index.nf"
+    process "BUILD_SPLICE_INDEX"
+
+    test("BUILD_SPLICE_INDEX output contract (stub)") {
+        options "-stub"
+        when {
+            def fixture = new File(launchDir.toString(), "build_splice_index-fixture")
+            fixture.mkdirs()
+            def gtf = new File(fixture, "test.gtf"); gtf.text = "stub"
+
+            process {
+                """
+                input[0] = Channel.value(file('${gtf.absolutePath}'))
+                input[1] = Channel.value('${outputDir}/indexes')
+                input[2] = Channel.value('splice.idx')
+                input[3] = Channel.value('test-runtime')
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.index.size() == 1 },
+                { assert file(process.out.index[0]).name == 'splice.idx' },
+                { assert process.out.runtime_marker.size() == 1 }
+            )
+        }
+    }
+}

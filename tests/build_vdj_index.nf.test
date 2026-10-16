@@ -1,0 +1,33 @@
+nextflow_process {
+    name "Test BUILD_VDJ_INDEX"
+    script "../modules/local/build_vdj_index.nf"
+    process "BUILD_VDJ_INDEX"
+
+    test("BUILD_VDJ_INDEX output contract (stub)") {
+        options "-stub"
+        when {
+            def fixture = new File(launchDir.toString(), "build_vdj_index-fixture")
+            fixture.mkdirs()
+            def gtf = new File(fixture, "test.gtf"); gtf.text = "stub"
+            def genome = new File(fixture, "test.fa"); genome.text = ">chr1\nACGT\n"
+
+            process {
+                """
+                input[0] = Channel.value(file('${gtf.absolutePath}'))
+                input[1] = Channel.value(file('${genome.absolutePath}'))
+                input[2] = Channel.value('${outputDir}/indexes')
+                input[3] = Channel.value('vdj.idx')
+                input[4] = Channel.value('test-runtime')
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.index.size() == 1 },
+                { assert file(process.out.index[0]).name == 'vdj.idx' },
+                { assert process.out.runtime_marker.size() == 1 }
+            )
+        }
+    }
+}

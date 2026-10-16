@@ -1,0 +1,29 @@
+nextflow_process {
+    name "Test SC_ANALYSE"
+    script "../modules/local/sc_analyse.nf"
+    process "SC_ANALYSE"
+
+    test("SC_ANALYSE output contract (stub)") {
+        options "-stub"
+        when {
+            def fixture = new File(launchDir.toString(), "sc_analyse-fixture")
+            fixture.mkdirs()
+            def exprs = new File(fixture, "exprs"); exprs.mkdirs()
+            new File(exprs, "matrix.mtx.gz").text = "stub"
+            def cells = new File(fixture, "cells.tsv"); cells.text = "cell\n"
+
+            process {
+                """
+                input[0] = Channel.of([[id:'test'], file('${exprs.absolutePath}'), file('${cells.absolutePath}')])
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.results.size() == 1 },
+                { assert file("${process.out.results[0][1]}/.stub").exists() }
+            )
+        }
+    }
+}

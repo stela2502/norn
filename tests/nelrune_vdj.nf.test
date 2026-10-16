@@ -1,0 +1,33 @@
+nextflow_process {
+    name "Test NELRUNE_VDJ"
+    script "../modules/local/nelrune_vdj.nf"
+    process "NELRUNE_VDJ"
+
+    test("NELRUNE_VDJ output contract (stub)") {
+        options "-stub"
+        when {
+            def fixture = new File(launchDir.toString(), "nelrune_vdj-fixture")
+            fixture.mkdirs()
+            def bam = new File(fixture, "reads.bam"); bam.text = "stub"
+            def idx = new File(fixture, "reference.vdjidx"); idx.text = "stub"
+
+            process {
+                """
+                input[0] = Channel.of([[id:'test', chemistry:'bd-v2-384'], file('${bam.absolutePath}', checkIfExists:true)])
+                input[1] = Channel.value(file('${idx.absolutePath}', checkIfExists:true))
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.tables.size() == 1 },
+                { assert file(process.out.tables[0][1]).name == 'vdj_calls.tsv' },
+                { assert file(process.out.tables[0][2]).name == 'vdj_receptors.tsv' },
+                { assert file(process.out.tables[0][3]).name == 'airr_rearrangements.tsv' },
+                { assert file(process.out.tables[0][4]).name == 'vdj-mapping-info.txt' },
+                { assert process.out.run_log.size() == 1 }
+            )
+        }
+    }
+}
