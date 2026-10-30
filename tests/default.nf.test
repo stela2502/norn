@@ -14,9 +14,6 @@ nextflow_pipeline {
 test,${projectDir}/tests/data/test_R1.fastq,${projectDir}/tests/data/test_R2.fastq,bd-v2-384
 """
 
-            def stubVault = new File(launchDir.toString(), "stub.modelvault")
-            stubVault.text = "stub\n"
-
             params {
                 samplesheet = stubSamplesheet.absolutePath
                 genome = "${projectDir}/tests/data/test.fa"
@@ -25,7 +22,7 @@ test,${projectDir}/tests/data/test_R1.fastq,${projectDir}/tests/data/test_R2.fas
                 splice_index = "${outputDir}/reference-cache/reference.splice.idx"
                 vdj_index = "${outputDir}/reference-cache/reference.vdjidx"
                 run_vdj = true
-                clonomap_vault = stubVault.absolutePath
+                clonomap_vault = null
                 health_server = false
                 min_umi_counts = 400
             }

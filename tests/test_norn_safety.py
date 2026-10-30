@@ -48,5 +48,15 @@ class NornSafetyTests(unittest.TestCase):
         self.assertRegex(source, r"(?s)script:\s*def plots_arg\s*=.*?\n\s*\"\"\"")
         self.assertIn("${plots_arg}", source)
 
+    def test_clonomap_vault_optional_wiring(self):
+        main = (ROOT / "main.nf").read_text()
+        module = (MODULES / "clonomap.nf").read_text()
+        self.assertNotIn("--clonomap_vault is required when --run_vdj is enabled", main)
+        self.assertIn("Channel.value(params.clonomap_vault", main)
+        self.assertIn(": [])", main)
+        self.assertIn("path model_vault_files", module)
+        self.assertIn("def vault_arg = model_vault_files ?", module)
+        self.assertIn("${vault_arg}", module)
+
 if __name__ == "__main__":
     unittest.main()

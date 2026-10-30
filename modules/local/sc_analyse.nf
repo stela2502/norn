@@ -17,7 +17,7 @@ process SC_ANALYSE {
         mkdir -p analysis_input/clonomap_out
         ln -s "\$(readlink -f "${clonomap_input}")" analysis_input/clonomap_out/cells.tsv
     fi
-    sc-analyse analysis_input \
+    sc-analyse gex --data analysis_input \
         --out sc_analysis \
         --min-umi-count ${params.min_umi_counts} \
         ${excludeVdjArg}

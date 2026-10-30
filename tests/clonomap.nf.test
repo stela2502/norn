@@ -12,12 +12,40 @@ nextflow_process {
             def receptors = new File(fixture, "vdj_receptors.tsv"); receptors.text = "cell\n"
             def airr = new File(fixture, "airr_rearrangements.tsv"); airr.text = "sequence_id\n"
             def mapping = new File(fixture, "vdj-mapping-info.txt"); mapping.text = "stub"
-            def vault = new File(fixture, "modelvault.bin"); vault.text = "stub"
 
             process {
                 """
                 input[0] = Channel.of([[id:'test'], file('${calls.absolutePath}'), file('${receptors.absolutePath}'), file('${airr.absolutePath}'), file('${mapping.absolutePath}')])
-                input[1] = Channel.value(file('${vault.absolutePath}'))
+                input[1] = Channel.value([])
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.cells.size() == 1 },
+                { assert file(process.out.cells[0][1]).name == 'cells.tsv' },
+                { assert process.out.results.size() == 1 },
+                { assert file("${process.out.results[0][1]}/families.tsv").exists() }
+            )
+        }
+    }
+
+    test("CLONOMAP output contract with vault (stub)") {
+        options "-stub"
+        when {
+            def fixture = new File(launchDir.toString(), "clonomap-fixture")
+            fixture.mkdirs()
+            def calls = new File(fixture, "vdj_calls.tsv"); calls.text = "cell\n"
+            def receptors = new File(fixture, "vdj_receptors.tsv"); receptors.text = "cell\n"
+            def airr = new File(fixture, "airr_rearrangements.tsv"); airr.text = "sequence_id\n"
+            def mapping = new File(fixture, "vdj-mapping-info.txt"); mapping.text = "stub"
+
+            def vault = new File(fixture, "modelvault.bin"); vault.text = "stub\n"
+            process {
+                """
+                input[0] = Channel.of([[id:'test'], file('${calls.absolutePath}'), file('${receptors.absolutePath}'), file('${airr.absolutePath}'), file('${mapping.absolutePath}')])
+                input[1] = Channel.value([file('${vault.absolutePath}')])
                 """
             }
         }
