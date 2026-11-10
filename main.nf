@@ -215,7 +215,10 @@ workflow {
 
     if (ontMode) {
         ont_input_ch = samples_ch.map { meta, bams, unused -> tuple(meta, bams[0]) }
-        NELRUNE_ONT(ont_input_ch, mapper_idx_ch, splice_idx_ch, genome_ch)
+        // Stage the VCF as a Nextflow path, rather than passing a host path into Apptainer.
+        // An empty list represents an absent optional VCF.
+        def vcf_ch = Channel.value(params.vcf ? file(params.vcf.toString(), checkIfExists: true) : [])
+        NELRUNE_ONT(ont_input_ch, mapper_idx_ch, splice_idx_ch, genome_ch, vcf_ch)
         analysis_input_ch = NELRUNE_ONT.out.filtered_exprs.map { meta, exprs -> tuple(meta, exprs, exprs) }
         if (!params.skip_sc_analyse) SC_ANALYSE(analysis_input_ch)
     } else {

@@ -39,6 +39,15 @@ class NornSafetyTests(unittest.TestCase):
         fixture = (ROOT / 'tests/ont_reference_resources.config').read_text()
         self.assertIn("errorStrategy = 'finish'", fixture)
 
+    def test_ont_vcf_is_staged_and_optional(self):
+        main = (ROOT / "main.nf").read_text()
+        module = (MODULES / "nelrune_ont.nf").read_text()
+        self.assertIn("file(params.vcf.toString(), checkIfExists: true) : []", main)
+        self.assertIn("genome_ch, vcf_ch)", main)
+        self.assertIn("path vcf", module)
+        self.assertIn("${vcfArg}", module)
+        self.assertNotIn("opt('--vcf', params.vcf)", module)
+
     def test_no_groovy_declarations_inside_shell_script(self):
         # A Groovy `def` inside a triple-quoted script becomes a shell command.
         # This catches the CLONOMAP plots_arg regression in all current/future modules.

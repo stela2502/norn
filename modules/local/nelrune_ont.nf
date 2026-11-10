@@ -6,6 +6,7 @@ process NELRUNE_ONT {
     path mapper_index
     path splice_index
     path genome
+    path vcf
     output:
     tuple val(meta), path('nelrune_out/filtered/exprs'), emit: filtered_exprs
     // Publish the complete Nelrune output, including novel transcripts and SNP evidence.
@@ -14,6 +15,7 @@ process NELRUNE_ONT {
     script:
     def opt = { flag, value -> value != null && value.toString().trim() ? "${flag} ${value}" : '' }
     def flag = { name, value -> value as boolean ? name : '' }
+    def vcfArg = vcf ? "--vcf ${vcf}" : ''
     def healthPort = (params.nelrune_health_port_base as int) + (task.index as int) - 1
     def healthArg = params.health_server ? "--health-port ${healthPort}" : '--no-health-server'
     """
@@ -37,7 +39,7 @@ process NELRUNE_ONT {
         ${flag('--barcode-crosscheck', params.barcode_crosscheck)} \
         ${flag('--ont-diagnostics', params.ont_diagnostics)} \
         ${opt('--dump-failed-reads', params.dump_failed_reads)} \
-        ${opt('--vcf', params.vcf)} \
+        ${vcfArg} \
         ${opt('--max-reads', params.max_reads)} \
         ${opt('--min-umi-count', params.min_umi_counts)} \
         --quant-mode ${params.quant_mode} \
