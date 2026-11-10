@@ -3,7 +3,7 @@ process SC_ANALYSE {
     publishDir "${params.outdir}/${meta.id}", mode: params.publish_mode
 
     input:
-    tuple val(meta), path(exprs), path(clonomap_input)
+    tuple val(meta), path(exprs), path(clonomap_input, stageAs: 'optional_clonomap/*')
 
     output:
     tuple val(meta), path('sc_analysis'), emit: results

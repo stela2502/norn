@@ -127,3 +127,30 @@ Fast wiring smoke test (no bioinformatics tools or containers required):
 nf-test test --tag stub
 ```
 
+
+## Reference-backed ONT transcript integration test
+
+The non-stub `tests/run_ont_reference_fixture.sh` reuses the 43-read synthetic
+Lumrik experiment (`tests/data/ont_reference_fixture/`). It builds the
+minimap2, STAR and Lumrik splice indexes, runs Norn with `--quant_mode transcript`
+and a VCF, then checks the **published** Nelrune outputs: novel exon chain,
+cell/UMI-resolved SNP evidence, supported molecules and expression count 2.
+Both ONT mapper branches (minimap2 and STAR) are checked against the same
+novel-transcript, SNP/UMI and matrix-expression truth. STAR indexing uses
+small-genome parameters only in this test. Use `--ont true` with `--mapper star`
+for ONT BAM inputs; existing paired-FASTQ STAR behavior is unchanged.
+The test skips downstream `sc-analyse` because this one-cell fixture is for
+transcript discovery, not clustering. Normal Norn runs still include it.
+
+Requires `nextflow`, `samtools`, `python3`, and a local `nelrune` executable
+for materializing the fixture. Use the newly released Lumrik image:
+
+```bash
+LUMRIK_IMAGE=ghcr.io/stela2502/lumrik:<new-tag> \
+  NELRUNE_BIN=~/git_Projects/lumrik/target/release/nelrune \
+  NORN_PROFILE=local,apptainer \
+  bash tests/run_ont_reference_fixture.sh
+```
+
+Set `NORN_PROFILE=local,docker` when using Docker instead. Generated assets
+are retained under `target/ont-reference-fixture/` and excluded from Git.

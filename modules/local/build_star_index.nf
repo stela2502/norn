@@ -36,7 +36,8 @@ process BUILD_STAR_INDEX {
         --runThreadN ${task.cpus} \\
         --genomeDir ${index_name} \\
         --genomeFastaFiles "\$star_genome" \\
-        --sjdbGTFfile "\$star_gtf"
+        --sjdbGTFfile "\$star_gtf" \\
+        ${params.star_index_extra_args ?: ''}
     """
     stub:
     """

@@ -3,3 +3,6 @@
 .nf-test/
 test-results/
 .nf-test.log
+
+# Generated real ONT integration fixture, mapper indexes, and Nelrune outputs
+/target/

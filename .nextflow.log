@@ -1,115 +1,89 @@
-Sep-25 10:21:04.961 [main] DEBUG nextflow.cli.Launcher - $> nextflow run /home/med-sal/git_Projects/norn/main.nf --max_reads 1000000 -config local-memory.config -profile local,singularity --samplesheet /home/med-sal/NAS/NELRUNE/REAL_TEST/sample_sheet.csv --additional_features bd_sample_mouse --genome /home/med-sal/sens05_shared/common/genome/genomes/mouse/GRCm39.MM39/GRCm39.genome.fa --gtf /home/med-sal/sens05_shared/common/genome/genomes/mouse/GRCm39.MM39/gencode.vM39.chr_patch_hapl_scaff.annotation.gtf --mapper_index /home/med-sal/NAS/NELRUNE/indexes/GRCm39_M39/star --splice_index /home/med-sal/NAS/NELRUNE/indexes/GRCm39_M39/mouse_GRCm39_M39.splice.idx --vdj_index /home/med-sal/NAS/NELRUNE/indexes/GRCm39_M39/mouse_GRCm39_M39.vdjidx --mapper_threads 4 --prepare_threads 20 --nelrune_threads 20 --vdj_threads 8 --min_umi_counts 50 --run_vdj true --health_server true --nelrune_health_port_base 8787 --vdj_health_port_base 18787 --make_seurat false --make_scanpy false --outdir /home/med-sal/NAS/NELRUNE/REAL_TEST_v0.7.0
-Sep-25 10:21:05.051 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 24.10.0
-Sep-25 10:21:05.069 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/med-sal/.nextflow/plugins; core-plugins: nf-amazon@2.9.0,nf-azure@1.10.1,nf-cloudcache@0.4.2,nf-codecommit@0.2.2,nf-console@1.1.4,nf-google@1.15.2,nf-tower@1.9.3,nf-wave@1.7.2
-Sep-25 10:21:05.089 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
-Sep-25 10:21:05.090 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
-Sep-25 10:21:05.093 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
-Sep-25 10:21:05.104 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
-Sep-25 10:21:05.126 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /home/med-sal/git_Projects/norn/nextflow.config
-Sep-25 10:21:05.130 [main] DEBUG nextflow.config.ConfigBuilder - User config file: /home/med-sal/git_Projects/norn/local-memory.config
-Sep-25 10:21:05.131 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/med-sal/git_Projects/norn/nextflow.config
-Sep-25 10:21:05.132 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/med-sal/git_Projects/norn/local-memory.config
-Sep-25 10:21:05.158 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/med-sal/.nextflow/secrets/store.json
-Sep-25 10:21:05.162 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@6f815e7f] - activable => nextflow.secret.LocalSecretsProvider@6f815e7f
-Sep-25 10:21:05.178 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `local,singularity`
-Sep-25 10:21:05.782 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `local,singularity`
-Sep-25 10:21:05.814 [main] DEBUG nextflow.config.ConfigBuilder - Available config profiles: [slurm, apptainer, singularity, local, docker]
-Sep-25 10:21:05.857 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 from script declaration
-Sep-25 10:21:05.872 [main] DEBUG nextflow.cli.CmdRun - Launching `/home/med-sal/git_Projects/norn/main.nf` [golden_bartik] DSL2 - revision: f5912c262a
-Sep-25 10:21:05.875 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
-Sep-25 10:21:05.875 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
-Sep-25 10:21:05.926 [main] DEBUG nextflow.Session - Session UUID: 40c115f1-1c95-4358-9aed-19b8f08de66d
-Sep-25 10:21:05.926 [main] DEBUG nextflow.Session - Run name: golden_bartik
-Sep-25 10:21:05.927 [main] DEBUG nextflow.Session - Executor pool size: 8
-Sep-25 10:21:05.935 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
-Sep-25 10:21:05.941 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
-Sep-25 10:21:05.961 [main] DEBUG nextflow.cli.CmdRun - 
+Nov-10 13:54:40.731 [main] DEBUG nextflow.cli.Launcher - $> nextflow run main.nf -profile local,apptainer -c /home/med-sal/git_Projects/norn/tests/ont_reference_resources.config --container 'ghcr.io/stela2502/lumrik:v1.0.2' --samplesheet /home/med-sal/git_Projects/norn/target/ont-reference-fixture/samplesheet.csv --ont true --mapper star --genome /home/med-sal/git_Projects/norn/target/ont-reference-fixture/generated/genome.fa.gz --gtf /home/med-sal/git_Projects/norn/target/ont-reference-fixture/generated/genes.gtf.gz --vcf /home/med-sal/git_Projects/norn/target/ont-reference-fixture/generated/variants.vcf.gz --splice_index /home/med-sal/git_Projects/norn/target/ont-reference-fixture/indexes/reference.splice.idx --mapper_index /home/med-sal/git_Projects/norn/target/ont-reference-fixture/indexes/star --star_index_extra_args '--genomeSAindexNbases 3 --genomeChrBinNbits 12' --primer_structure 'TYPE:GEX+FIXED:CTACACGACGCTCTTCCGATCT:mm=2+TENX_CELL:3p-v3+UMI:12' --quant_mode transcript --min_umi_counts 1 --run_vdj false --skip_sc_analyse true --health_server false --mapper_threads 2 --nelrune_quant_threads 2 --outdir /home/med-sal/git_Projects/norn/target/ont-reference-fixture/results/star -resume
+Nov-10 13:54:40.823 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 24.10.0
+Nov-10 13:54:40.842 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/med-sal/.nextflow/plugins; core-plugins: nf-amazon@2.9.0,nf-azure@1.10.1,nf-cloudcache@0.4.2,nf-codecommit@0.2.2,nf-console@1.1.4,nf-google@1.15.2,nf-tower@1.9.3,nf-wave@1.7.2
+Nov-10 13:54:40.861 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Nov-10 13:54:40.862 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Nov-10 13:54:40.866 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Nov-10 13:54:40.878 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Nov-10 13:54:40.899 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /home/med-sal/git_Projects/norn/nextflow.config
+Nov-10 13:54:40.902 [main] DEBUG nextflow.config.ConfigBuilder - User config file: /home/med-sal/git_Projects/norn/tests/ont_reference_resources.config
+Nov-10 13:54:40.904 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/med-sal/git_Projects/norn/nextflow.config
+Nov-10 13:54:40.905 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/med-sal/git_Projects/norn/tests/ont_reference_resources.config
+Nov-10 13:54:40.932 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/med-sal/.nextflow/secrets/store.json
+Nov-10 13:54:40.936 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@4925f4f5] - activable => nextflow.secret.LocalSecretsProvider@4925f4f5
+Nov-10 13:54:40.952 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `local,apptainer`
+Nov-10 13:54:41.623 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `local,apptainer`
+Nov-10 13:54:41.659 [main] DEBUG nextflow.config.ConfigBuilder - Available config profiles: [slurm, apptainer, singularity, local, docker]
+Nov-10 13:54:41.702 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 from script declaration
+Nov-10 13:54:41.717 [main] DEBUG nextflow.cli.CmdRun - Launching `main.nf` [nice_wing] DSL2 - revision: ec2792628c
+Nov-10 13:54:41.719 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Nov-10 13:54:41.720 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
+Nov-10 13:54:41.768 [main] DEBUG nextflow.Session - Session UUID: 56336193-eee4-4e82-bf08-7eef812d4b0e
+Nov-10 13:54:41.768 [main] DEBUG nextflow.Session - Run name: nice_wing
+Nov-10 13:54:41.768 [main] DEBUG nextflow.Session - Executor pool size: 8
+Nov-10 13:54:41.776 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Nov-10 13:54:41.782 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+Nov-10 13:54:41.800 [main] DEBUG nextflow.cli.CmdRun - 
   Version: 24.10.0 build 5928
   Created: 27-10-2024 18:36 UTC (19:36 CEST)
-  System: Linux 7.0.0-29-generic
-  Runtime: Groovy 4.0.23 on OpenJDK 64-Bit Server VM 17.0.20.1+1-1-24.04-Ubuntu
+  System: Linux 7.0.0-42-generic
+  Runtime: Groovy 4.0.23 on OpenJDK 64-Bit Server VM 17.0.21.0.3+1-1-24.04.1-Ubuntu
   Encoding: UTF-8 (UTF-8)
-  Process: 3505768@Jesse [127.0.1.1]
-  CPUs: 8 - Mem: 31.3 GB (9.5 GB) - Swap: 8 GB (3.9 GB)
-Sep-25 10:21:05.987 [main] DEBUG nextflow.Session - Work-dir: /home/med-sal/git_Projects/norn/work [ext2/ext3]
-Sep-25 10:21:05.987 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /home/med-sal/git_Projects/norn/bin
-Sep-25 10:21:06.003 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
-Sep-25 10:21:06.014 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
-Sep-25 10:21:06.042 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
-Sep-25 10:21:06.053 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 9; maxThreads: 1000
-Sep-25 10:21:06.115 [main] DEBUG nextflow.Session - Session start
-Sep-25 10:21:06.638 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
-Sep-25 10:21:07.434 [main] INFO  nextflow.Nextflow -   STAR index: reusing /home/med-sal/NAS/NELRUNE/indexes/GRCm39_M39/star
-Sep-25 10:21:07.441 [main] INFO  nextflow.Nextflow -   splice index: reusing /home/med-sal/NAS/NELRUNE/indexes/GRCm39_M39/mouse_GRCm39_M39.splice.idx (ghcr.io/stela2502/lumrik:v0.7.3)
-Sep-25 10:21:07.443 [main] INFO  nextflow.Nextflow -   VDJ index: reusing /home/med-sal/NAS/NELRUNE/indexes/GRCm39_M39/mouse_GRCm39_M39.vdjidx (ghcr.io/stela2502/lumrik:v0.7.3)
-Sep-25 10:21:07.516 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:NELRUNE_PREPARE` matches process NELRUNE_PREPARE
-Sep-25 10:21:07.529 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
-Sep-25 10:21:07.530 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Sep-25 10:21:07.535 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
-Sep-25 10:21:07.541 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=8; memory=31.3 GB; capacity=8; pollInterval=100ms; dumpInterval=5m
-Sep-25 10:21:07.543 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
-Sep-25 10:21:07.618 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:STAR_ALIGN` matches process STAR_ALIGN
-Sep-25 10:21:07.621 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
-Sep-25 10:21:07.621 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Sep-25 10:21:07.644 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:NELRUNE_QUANT` matches process NELRUNE_QUANT
-Sep-25 10:21:07.647 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
-Sep-25 10:21:07.647 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Sep-25 10:21:07.655 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:SC_ANALYSE` matches process SC_ANALYSE
-Sep-25 10:21:07.657 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
-Sep-25 10:21:07.657 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Sep-25 10:21:07.669 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:NELRUNE_VDJ` matches process NELRUNE_VDJ
-Sep-25 10:21:07.671 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
-Sep-25 10:21:07.672 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
-Sep-25 10:21:07.675 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: BUILD_VDJ_INDEX, NELRUNE_VDJ, NELRUNE_PREPARE, NELRUNE_QUANT, SC_ANALYSE, BUILD_STAR_INDEX, BUILD_SPLICE_INDEX, STAR_ALIGN
-Sep-25 10:21:07.677 [main] DEBUG nextflow.Session - Igniting dataflow network (11)
-Sep-25 10:21:07.682 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NELRUNE_PREPARE
-Sep-25 10:21:07.683 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > STAR_ALIGN
-Sep-25 10:21:07.683 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NELRUNE_QUANT
-Sep-25 10:21:07.684 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > SC_ANALYSE
-Sep-25 10:21:07.684 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NELRUNE_VDJ
-Sep-25 10:21:07.685 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
-  Script_f7f975a799bbfd9c: /home/med-sal/git_Projects/norn/main.nf
-  Script_5254c2e137d8e208: /home/med-sal/git_Projects/norn/./modules/local/nelrune_quant.nf
-  Script_51d31f4f435562bd: /home/med-sal/git_Projects/norn/./modules/local/nelrune_prepare.nf
-  Script_11f472e862d3acf3: /home/med-sal/git_Projects/norn/./modules/local/sc_analyse.nf
-  Script_db1591f2678b5b06: /home/med-sal/git_Projects/norn/./modules/local/build_star_index.nf
+  Process: 57949@Jesse [127.0.1.1]
+  CPUs: 8 - Mem: 31.3 GB (11.7 GB) - Swap: 8 GB (8 GB)
+Nov-10 13:54:41.830 [main] DEBUG nextflow.Session - Work-dir: /home/med-sal/git_Projects/norn/work [ext2/ext3]
+Nov-10 13:54:41.831 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /home/med-sal/git_Projects/norn/bin
+Nov-10 13:54:41.840 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Nov-10 13:54:41.849 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Nov-10 13:54:41.875 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Nov-10 13:54:41.884 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 9; maxThreads: 1000
+Nov-10 13:54:41.956 [main] DEBUG nextflow.Session - Session start
+Nov-10 13:54:42.520 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Nov-10 13:54:43.451 [main] INFO  nextflow.Nextflow -   STAR index: building /home/med-sal/git_Projects/norn/target/ont-reference-fixture/indexes/star
+Nov-10 13:54:43.516 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:BUILD_STAR_INDEX` matches process BUILD_STAR_INDEX
+Nov-10 13:54:43.525 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
+Nov-10 13:54:43.526 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Nov-10 13:54:43.531 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Nov-10 13:54:43.536 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=8; memory=31.3 GB; capacity=8; pollInterval=100ms; dumpInterval=5m
+Nov-10 13:54:43.538 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
+Nov-10 13:54:43.595 [main] INFO  nextflow.Nextflow -   splice index: reusing /home/med-sal/git_Projects/norn/target/ont-reference-fixture/indexes/reference.splice.idx (ghcr.io/stela2502/lumrik:v1.0.2)
+Nov-10 13:54:43.621 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:NELRUNE_ONT` matches process NELRUNE_ONT
+Nov-10 13:54:43.625 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
+Nov-10 13:54:43.625 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Nov-10 13:54:43.635 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: BUILD_VDJ_INDEX, CLONOMAP, NELRUNE_VDJ, NELRUNE_PREPARE, NELRUNE_QUANT, NELRUNE_ONT, BUILD_STAR_INDEX, BUILD_SPLICE_INDEX, STAR_ALIGN, BUILD_MINIMAP2_INDEX, SC_ANALYSE
+Nov-10 13:54:43.638 [main] DEBUG nextflow.Session - Igniting dataflow network (8)
+Nov-10 13:54:43.643 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > BUILD_STAR_INDEX
+Nov-10 13:54:43.644 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NELRUNE_ONT
+Nov-10 13:54:43.645 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Script_4e96627961758dbe: /home/med-sal/git_Projects/norn/./modules/local/sc_analyse.nf
+  Script_269bee57ee2aabb5: /home/med-sal/git_Projects/norn/./modules/local/clonomap.nf
+  Script_9496dec56bc38267: /home/med-sal/git_Projects/norn/./modules/local/nelrune_prepare.nf
+  Script_f524226cc5dd91e9: /home/med-sal/git_Projects/norn/./modules/local/nelrune_quant.nf
+  Script_b74a8099bba3747d: /home/med-sal/git_Projects/norn/./modules/local/nelrune_vdj.nf
+  Script_d7190de2e6685816: /home/med-sal/git_Projects/norn/./modules/local/build_star_index.nf
   Script_561d23e34f339037: /home/med-sal/git_Projects/norn/./modules/local/build_vdj_index.nf
-  Script_3add46bc51102f51: /home/med-sal/git_Projects/norn/./modules/local/nelrune_vdj.nf
+  Script_40dfcfb85b99bb2b: /home/med-sal/git_Projects/norn/main.nf
+  Script_b8c16aa863cb9a2c: /home/med-sal/git_Projects/norn/./modules/local/build_minimap2_index.nf
   Script_a3b6f8063cde0a6a: /home/med-sal/git_Projects/norn/./modules/local/build_splice_index.nf
   Script_dc8fa1f55c7268ee: /home/med-sal/git_Projects/norn/./modules/local/star.nf
-Sep-25 10:21:07.685 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
-Sep-25 10:21:07.685 [main] DEBUG nextflow.Session - Session await
-Sep-25 10:21:07.801 [Actor Thread 7] DEBUG nextflow.container.SingularityCache - Singularity found local store for image=docker://ghcr.io/stela2502/lumrik:v0.7.3; path=/data1/nextflow/singularity/ghcr.io-stela2502-lumrik-v0.7.3.img
-Sep-25 10:21:07.956 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
-Sep-25 10:21:07.958 [Task submitter] INFO  nextflow.Session - [8e/e38823] Submitted process > NELRUNE_PREPARE (ZD-4631-PCLaneG)
-Sep-25 10:22:04.028 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: NELRUNE_PREPARE (ZD-4631-PCLaneG); status: COMPLETED; exit: 0; error: -; workDir: /home/med-sal/git_Projects/norn/work/8e/e38823daae4d0e13097f07802578dd]
-Sep-25 10:22:04.029 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
-Sep-25 10:22:04.037 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
-Sep-25 10:22:04.037 [Task submitter] INFO  nextflow.Session - [aa/d7bd07] Submitted process > NELRUNE_PREPARE (ZD-4631-Undetermined)
-Sep-25 10:22:04.040 [TaskFinalizer-1] DEBUG nextflow.processor.TaskProcessor - Process `NELRUNE_PREPARE (ZD-4631-PCLaneG)` is unable to find [UnixPath]: `/home/med-sal/git_Projects/norn/work/8e/e38823daae4d0e13097f07802578dd/prepare_out/preparelog.jaml` (pattern: `prepare_out/preparelog.jaml`)
-Sep-25 10:22:04.047 [TaskFinalizer-1] DEBUG nextflow.processor.TaskProcessor - Handling unexpected condition for
-  task: name=NELRUNE_PREPARE (ZD-4631-PCLaneG); work-dir=/home/med-sal/git_Projects/norn/work/8e/e38823daae4d0e13097f07802578dd
-  error [nextflow.exception.MissingFileException]: Missing output file(s) `prepare_out/preparelog.jaml` expected by process `NELRUNE_PREPARE (ZD-4631-PCLaneG)`
-Sep-25 10:22:04.054 [TaskFinalizer-1] INFO  nextflow.processor.TaskProcessor - [8e/e38823] NOTE: Missing output file(s) `prepare_out/preparelog.jaml` expected by process `NELRUNE_PREPARE (ZD-4631-PCLaneG)` -- Error is ignored
-Sep-25 10:22:28.618 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 3; name: NELRUNE_PREPARE (ZD-4631-Undetermined); status: COMPLETED; exit: 0; error: -; workDir: /home/med-sal/git_Projects/norn/work/aa/d7bd073b2311bcf1d13ae4c5dcfd66]
-Sep-25 10:22:28.619 [TaskFinalizer-2] DEBUG nextflow.processor.TaskProcessor - Process `NELRUNE_PREPARE (ZD-4631-Undetermined)` is unable to find [UnixPath]: `/home/med-sal/git_Projects/norn/work/aa/d7bd073b2311bcf1d13ae4c5dcfd66/prepare_out/preparelog.jaml` (pattern: `prepare_out/preparelog.jaml`)
-Sep-25 10:22:28.620 [TaskFinalizer-2] DEBUG nextflow.processor.TaskProcessor - Handling unexpected condition for
-  task: name=NELRUNE_PREPARE (ZD-4631-Undetermined); work-dir=/home/med-sal/git_Projects/norn/work/aa/d7bd073b2311bcf1d13ae4c5dcfd66
-  error [nextflow.exception.MissingFileException]: Missing output file(s) `prepare_out/preparelog.jaml` expected by process `NELRUNE_PREPARE (ZD-4631-Undetermined)`
-Sep-25 10:22:28.621 [TaskFinalizer-2] INFO  nextflow.processor.TaskProcessor - [aa/d7bd07] NOTE: Missing output file(s) `prepare_out/preparelog.jaml` expected by process `NELRUNE_PREPARE (ZD-4631-Undetermined)` -- Error is ignored
-Sep-25 10:22:28.623 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
-Sep-25 10:22:28.624 [Task submitter] INFO  nextflow.Session - [69/f6d7c0] Submitted process > NELRUNE_PREPARE (ZD-4631-BcellsLaneF)
-Sep-25 10:23:25.431 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: NELRUNE_PREPARE (ZD-4631-BcellsLaneF); status: COMPLETED; exit: 0; error: -; workDir: /home/med-sal/git_Projects/norn/work/69/f6d7c061f3095f0512add148d89742]
-Sep-25 10:23:25.432 [TaskFinalizer-3] DEBUG nextflow.processor.TaskProcessor - Process `NELRUNE_PREPARE (ZD-4631-BcellsLaneF)` is unable to find [UnixPath]: `/home/med-sal/git_Projects/norn/work/69/f6d7c061f3095f0512add148d89742/prepare_out/preparelog.jaml` (pattern: `prepare_out/preparelog.jaml`)
-Sep-25 10:23:25.433 [TaskFinalizer-3] DEBUG nextflow.processor.TaskProcessor - Handling unexpected condition for
-  task: name=NELRUNE_PREPARE (ZD-4631-BcellsLaneF); work-dir=/home/med-sal/git_Projects/norn/work/69/f6d7c061f3095f0512add148d89742
-  error [nextflow.exception.MissingFileException]: Missing output file(s) `prepare_out/preparelog.jaml` expected by process `NELRUNE_PREPARE (ZD-4631-BcellsLaneF)`
-Sep-25 10:23:25.434 [TaskFinalizer-3] INFO  nextflow.processor.TaskProcessor - [69/f6d7c0] NOTE: Missing output file(s) `prepare_out/preparelog.jaml` expected by process `NELRUNE_PREPARE (ZD-4631-BcellsLaneF)` -- Error is ignored
-Sep-25 10:23:25.437 [main] DEBUG nextflow.Session - Session await > all processes finished
-Sep-25 10:23:25.532 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
-Sep-25 10:23:25.533 [main] DEBUG nextflow.Session - Session await > all barriers passed
-Sep-25 10:23:25.535 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'TaskFinalizer' shutdown completed (hard=false)
-Sep-25 10:23:25.539 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=0; failedCount=3; ignoredCount=3; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=0ms; failedDuration=18m 18s; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=1; peakCpus=8; peakMemory=24 GB; ]
-Sep-25 10:23:25.670 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
-Sep-25 10:23:25.692 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'FileTransfer' shutdown completed (hard=false)
-Sep-25 10:23:25.693 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye
+  Script_d10b4a1a20c36d7b: /home/med-sal/git_Projects/norn/./modules/local/nelrune_ont.nf
+Nov-10 13:54:43.645 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+Nov-10 13:54:43.645 [main] DEBUG nextflow.Session - Session await
+Nov-10 13:54:43.722 [Actor Thread 9] DEBUG nextflow.container.SingularityCache - Apptainer found local store for image=docker://ghcr.io/stela2502/lumrik:v1.0.2; path=/home/med-sal/git_Projects/norn/work/singularity/ghcr.io-stela2502-lumrik-v1.0.2.img
+Nov-10 13:54:43.826 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Nov-10 13:54:43.828 [Task submitter] INFO  nextflow.Session - [ad/0d3591] Submitted process > BUILD_STAR_INDEX (genome)
+Nov-10 13:54:44.814 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: BUILD_STAR_INDEX (genome); status: COMPLETED; exit: 0; error: -; workDir: /home/med-sal/git_Projects/norn/work/ad/0d3591a2ede3709c43db0b63ba15dc]
+Nov-10 13:54:44.814 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+Nov-10 13:54:44.921 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Nov-10 13:54:44.922 [Task submitter] INFO  nextflow.Session - [93/d9e775] Submitted process > NELRUNE_ONT (ont_fixture)
+Nov-10 13:54:51.596 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: NELRUNE_ONT (ont_fixture); status: COMPLETED; exit: 0; error: -; workDir: /home/med-sal/git_Projects/norn/work/93/d9e775973e4ba9bd180ebe8711aaf1]
+Nov-10 13:54:51.604 [TaskFinalizer-2] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'PublishDir' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+Nov-10 13:54:51.606 [main] DEBUG nextflow.Session - Session await > all processes finished
+Nov-10 13:54:51.697 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
+Nov-10 13:54:51.697 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Nov-10 13:54:51.699 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'TaskFinalizer' shutdown completed (hard=false)
+Nov-10 13:54:51.699 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'PublishDir' shutdown completed (hard=false)
+Nov-10 13:54:51.705 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=2; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=15.1s; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=1; peakCpus=2; peakMemory=8 GB; ]
+Nov-10 13:54:51.804 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+Nov-10 13:54:51.823 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'FileTransfer' shutdown completed (hard=false)
+Nov-10 13:54:51.824 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye

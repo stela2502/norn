@@ -6,6 +6,8 @@ include { STAR_ALIGN }         from './modules/local/star'
 include { NELRUNE_QUANT }      from './modules/local/nelrune_quant'
 include { NELRUNE_VDJ }        from './modules/local/nelrune_vdj'
 include { CLONOMAP }           from './modules/local/clonomap'
+include { BUILD_MINIMAP2_INDEX } from './modules/local/build_minimap2_index'
+include { NELRUNE_ONT } from './modules/local/nelrune_ont'
 include { SC_ANALYSE }          from './modules/local/sc_analyse'
 
 nextflow.enable.dsl=2
@@ -69,6 +71,11 @@ def sampleChannel(samplesheet) {
             def chemistry = row.chemistry?.trim()
             if (!chemistry) error("sample ${id}: chemistry is required")
 
+            if (row.bam?.trim()) {
+                if (row.r1?.trim() || row.r2?.trim()) error("sample ${id}: BAM and FASTQ inputs are mutually exclusive")
+                return tuple([id: id, chemistry: chemistry, ont: true], [file(row.bam.trim(), checkIfExists: true)], [])
+            }
+            if (!row.r1?.trim() || !row.r2?.trim()) error("sample ${id}: provide bam or both r1 and r2")
             def r1s = row.r1.split(';').collect { file(it.trim(), checkIfExists: true) }
             def r2s = row.r2.split(';').collect { file(it.trim(), checkIfExists: true) }
             if (r1s.size() != r2s.size()) error("sample ${id}: r1/r2 lane counts differ")
@@ -88,17 +95,32 @@ workflow {
     def genome = requireFile(params.genome, '--genome')
 
     samples_ch = sampleChannel(params.samplesheet)
+    def ontMode = params.mapper == 'minimap2' || params.ont
+    if (ontMode && params.run_vdj) error('ONT VDJ handoff is not yet validated; use --run_vdj false')
+    if (ontMode && params.mapper_paired) error('ONT genomic mapping requires single-read mapping; disable --mapper_paired')
+    if (!['star', 'minimap2'].contains(params.mapper)) error('Norn supports --mapper star or minimap2')
+    samples_ch = samples_ch.map { meta, reads, mates ->
+        if (ontMode != (meta.ont == true)) error("sample ${meta.id}: --mapper ${params.mapper} does not match input type (ONT BAM vs paired FASTQ)")
+        tuple(meta, reads, mates)
+    }
     gtf_ch = Channel.value(gtf)
     genome_ch = Channel.value(genome)
 
     // Mapper reference. For STAR, --mapper_index is a persistent index location:
     // reuse a complete index there, or build/publish one there when the path is
     // missing or empty. Without --mapper_index, keep the normal result location.
-    if (params.mapper != 'star') {
-        if (!params.mapper_index) {
-            error("Norn can currently build mapper indexes only for --mapper star; supply --mapper_index for '${params.mapper}'")
+    if (ontMode && params.mapper == 'minimap2') {
+        def indexPath = params.mapper_index ?: "${params.outdir}/reference/minimap2/GRCh38.splice.mmi"
+        def idx = java.nio.file.Paths.get(indexPath.toString()).toAbsolutePath().normalize()
+        if (java.nio.file.Files.isRegularFile(idx) && java.nio.file.Files.size(idx) > 0L) {
+            log.info "  minimap2 splice index: reusing ${idx}"
+            mapper_idx_ch = Channel.value(file(idx.toString(), checkIfExists: true))
+        } else {
+            if (java.nio.file.Files.exists(idx)) error("minimap2 index path exists but is not a non-empty file: ${idx}")
+            log.info "  minimap2 splice index: building ${idx}"
+            BUILD_MINIMAP2_INDEX(genome_ch, Channel.value(idx.parent.toString()), Channel.value(idx.fileName.toString()))
+            mapper_idx_ch = BUILD_MINIMAP2_INDEX.out.index
         }
-        mapper_idx_ch = Channel.value(requireFile(params.mapper_index, '--mapper_index'))
     } else {
         def requestedMapperIndex = params.mapper_index ?: "${params.outdir}/reference/star/star_index"
         def mapperState = starIndexState(requestedMapperIndex)
@@ -191,35 +213,42 @@ workflow {
         }
     }
 
-    NELRUNE_PREPARE(samples_ch)
-    STAR_ALIGN(NELRUNE_PREPARE.out.prepared, mapper_idx_ch)
-
-    quant_input_ch = STAR_ALIGN.out.bam
-        .join(NELRUNE_PREPARE.out.prepared, by: 0)
-        .map { meta, bam, prepare_dir -> tuple(meta, bam, prepare_dir) }
-
-    NELRUNE_QUANT(quant_input_ch, splice_idx_ch, genome_ch)
-
-    if (params.run_vdj) {
-        // A model vault enables optional AA model-space analysis in ClonoMap.
-        // Pass an empty list when absent so Nextflow stages no vault file.
-        clonomap_vault_ch = Channel.value(params.clonomap_vault
-            ? [requireFile(params.clonomap_vault, '--clonomap_vault')]
-            : [])
-
-        // VDJ is an independent biological assay. Feed it the mapper BAM directly;
-        // GEX cell calling must not determine which receptor-bearing cells are inspected.
-        NELRUNE_VDJ(STAR_ALIGN.out.bam, vdj_idx_ch)
-        CLONOMAP(NELRUNE_VDJ.out.tables, clonomap_vault_ch)
-        analysis_input_ch = NELRUNE_QUANT.out.filtered_exprs
-            .join(CLONOMAP.out.cells, by: 0)
-            .map { meta, exprs, clonomap_cells -> tuple(meta, exprs, clonomap_cells) }
-        SC_ANALYSE(analysis_input_ch)
+    if (ontMode) {
+        ont_input_ch = samples_ch.map { meta, bams, unused -> tuple(meta, bams[0]) }
+        NELRUNE_ONT(ont_input_ch, mapper_idx_ch, splice_idx_ch, genome_ch)
+        analysis_input_ch = NELRUNE_ONT.out.filtered_exprs.map { meta, exprs -> tuple(meta, exprs, exprs) }
+        if (!params.skip_sc_analyse) SC_ANALYSE(analysis_input_ch)
     } else {
-        analysis_input_ch = NELRUNE_QUANT.out.filtered_exprs
-            .map { meta, exprs -> tuple(meta, exprs, exprs) }
-        SC_ANALYSE(analysis_input_ch)
+        NELRUNE_PREPARE(samples_ch)
+        STAR_ALIGN(NELRUNE_PREPARE.out.prepared, mapper_idx_ch)
+    
+        quant_input_ch = STAR_ALIGN.out.bam
+            .join(NELRUNE_PREPARE.out.prepared, by: 0)
+            .map { meta, bam, prepare_dir -> tuple(meta, bam, prepare_dir) }
+    
+        NELRUNE_QUANT(quant_input_ch, splice_idx_ch, genome_ch)
+    
+        if (params.run_vdj) {
+            // A model vault enables optional AA model-space analysis in ClonoMap.
+            // Pass an empty list when absent so Nextflow stages no vault file.
+            clonomap_vault_ch = Channel.value(params.clonomap_vault
+                ? [requireFile(params.clonomap_vault, '--clonomap_vault')]
+                : [])
+    
+            // VDJ is an independent biological assay. Feed it the mapper BAM directly;
+            // GEX cell calling must not determine which receptor-bearing cells are inspected.
+            NELRUNE_VDJ(STAR_ALIGN.out.bam, vdj_idx_ch)
+            CLONOMAP(NELRUNE_VDJ.out.tables, clonomap_vault_ch)
+            analysis_input_ch = NELRUNE_QUANT.out.filtered_exprs
+                .join(CLONOMAP.out.cells, by: 0)
+                .map { meta, exprs, clonomap_cells -> tuple(meta, exprs, clonomap_cells) }
+            SC_ANALYSE(analysis_input_ch)
+        } else {
+            analysis_input_ch = NELRUNE_QUANT.out.filtered_exprs
+                .map { meta, exprs -> tuple(meta, exprs, exprs) }
+            SC_ANALYSE(analysis_input_ch)
+        }
+    
     }
-
 
 }

@@ -30,6 +30,15 @@ class NornSafetyTests(unittest.TestCase):
                 self.assertNotRegex(path.read_text(), r"(?m)^\s*errorStrategy\s*=\s*['\"]terminate['\"]")
         self.assertRegex((ROOT / "nextflow.config").read_text(), r"(?m)^\s*errorStrategy\s*=\s*['\"]ignore['\"]")
 
+    def test_ont_mapper_index_routing(self):
+        main = (ROOT / "main.nf").read_text()
+        self.assertIn("if (ontMode && params.mapper == 'minimap2') {", main)
+        self.assertIn('BUILD_MINIMAP2_INDEX(genome_ch,', main)
+        self.assertIn('BUILD_STAR_INDEX(', main)
+        self.assertIn('mapper_idx_ch = BUILD_STAR_INDEX.out.index', main)
+        fixture = (ROOT / 'tests/ont_reference_resources.config').read_text()
+        self.assertIn("errorStrategy = 'finish'", fixture)
+
     def test_no_groovy_declarations_inside_shell_script(self):
         # A Groovy `def` inside a triple-quoted script becomes a shell command.
         # This catches the CLONOMAP plots_arg regression in all current/future modules.

@@ -1,0 +1,35 @@
+nextflow_pipeline {
+    name "Norn ONT genomic splice stub"
+    script "../main.nf"
+    tag "pipeline"
+    tag "ont"
+    test("ONT BAM through genomic minimap2 and Nelrune") {
+        options "-stub"
+        when {
+            def sheet = new File(launchDir.toString(), "ont-stub-samplesheet.csv")
+            sheet.text = """sample,bam,chemistry
+ont_test,${projectDir}/tests/data/test_R1.fastq,tenx-three-prime-v3
+"""
+            params {
+                samplesheet = sheet.absolutePath
+                mapper = 'minimap2'
+                genome = "${projectDir}/tests/data/test.fa"
+                gtf = "${projectDir}/tests/data/test.gtf"
+                outdir = "${outputDir}/results"
+                mapper_index = "${outputDir}/reference-cache/genome.splice.mmi"
+                splice_index = "${outputDir}/reference-cache/reference.splice.idx"
+                run_vdj = false
+                health_server = false
+                min_umi_counts = 1
+            }
+        }
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert path("${outputDir}/reference-cache/genome.splice.mmi").exists() },
+                { assert path("${outputDir}/results/ont_test/nelrune/nelrune_out/filtered/exprs/matrix.mtx.gz").exists() },
+                { assert path("${outputDir}/results/ont_test/sc_analysis/.stub").exists() }
+            )
+        }
+    }
+}
