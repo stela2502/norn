@@ -105,6 +105,8 @@ workflow {
     }
     gtf_ch = Channel.value(gtf)
     genome_ch = Channel.value(genome)
+    // One optional VCF input for both ONT and FASTQ; path inputs stage it into each task.
+    vcf_ch = Channel.value(params.vcf ? [requireFile(params.vcf, '--vcf')] : [])
 
     // Mapper reference. For STAR, --mapper_index is a persistent index location:
     // reuse a complete index there, or build/publish one there when the path is
@@ -215,9 +217,6 @@ workflow {
 
     if (ontMode) {
         ont_input_ch = samples_ch.map { meta, bams, unused -> tuple(meta, bams[0]) }
-        // Stage the VCF as a Nextflow path, rather than passing a host path into Apptainer.
-        // An empty list represents an absent optional VCF.
-        def vcf_ch = Channel.value(params.vcf ? file(params.vcf.toString(), checkIfExists: true) : [])
         NELRUNE_ONT(ont_input_ch, mapper_idx_ch, splice_idx_ch, genome_ch, vcf_ch)
         analysis_input_ch = NELRUNE_ONT.out.filtered_exprs.map { meta, exprs -> tuple(meta, exprs, exprs) }
         if (!params.skip_sc_analyse) SC_ANALYSE(analysis_input_ch)
@@ -229,7 +228,7 @@ workflow {
             .join(NELRUNE_PREPARE.out.prepared, by: 0)
             .map { meta, bam, prepare_dir -> tuple(meta, bam, prepare_dir) }
     
-        NELRUNE_QUANT(quant_input_ch, splice_idx_ch, genome_ch)
+        NELRUNE_QUANT(quant_input_ch, splice_idx_ch, genome_ch, vcf_ch)
     
         if (params.run_vdj) {
             // A model vault enables optional AA model-space analysis in ClonoMap.

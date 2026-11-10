@@ -7,6 +7,7 @@ process NELRUNE_QUANT {
     tuple val(meta), path(bam), path(prepare_dir)
     path splice_index
     path genome
+    path vcf
 
     output:
     tuple val(meta), path('nelrune_out/filtered/exprs'), emit: filtered_exprs
@@ -32,9 +33,9 @@ process NELRUNE_QUANT {
     // The genome FASTA is a SNP-only runtime dependency. Norn still stages it
     // through a path input so that, when SNP collection is requested, the
     // container sees the same reference that Norn used to build its indexes.
-    def collectSnps = params.vcf != null && params.vcf.toString().trim() != ''
+    def collectSnps = vcf && !vcf.isEmpty()
     def genomeArg = collectSnps ? "--genome ${genome}" : ''
-    def vcfArg = arg('--vcf', params.vcf)
+    def vcfArg = collectSnps ? "--vcf ${vcf}" : ''
     def maxReadsArg = arg('--max-reads', params.max_reads)
     def readTagArg = listArg('--read-tag-table', params.read_tag_table)
     def bamOutArg = arg('--bam-out', params.bam_out)
